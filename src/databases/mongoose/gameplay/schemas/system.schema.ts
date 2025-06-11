@@ -6,9 +6,9 @@ import {
     GraphQLTypeCropId,
     SystemId,
     GraphQLTypeSystemId,
-    NFTType,
+    NFTCollectionKey,
     NFTRarity,
-    GraphQLTypeNFTType,
+    GraphQLTypeNFTCollectionKey,
     TokenType,
     GraphQLTypeTokenType,
     TokenKey,
@@ -637,7 +637,7 @@ export class CharacterModels {
     @Field(() => CharacterModelAddresses, {
         description: "Character model addresses"
     })
-    [NFTType.DragonFruit]: CharacterModelAddresses
+    [NFTCollectionKey.DragonFruit]: CharacterModelAddresses
 }
 
 @ObjectType({
@@ -834,6 +834,11 @@ export class NFTCollectionData {
     })
         imageUrl: string
 
+    @Field(() => String, {
+        description: "Collection description"
+    })
+        description: string
+
     @Field(() => NFTRarities, {
         description: "NFT rarities"
     })
@@ -868,31 +873,31 @@ export class NFTCollections {
     @Field(() => NFTCollection, {
         description: "NFT collection"
     })
-    [NFTType.DragonFruit]: NFTCollection
+    [NFTCollectionKey.DragonFruit]: NFTCollection
 
     @Field(() => NFTCollection, {
         description: "NFT collection"
     })
-    [NFTType.Pomegranate]: NFTCollection
+    [NFTCollectionKey.Pomegranate]: NFTCollection
     @Field(() => NFTCollection, {
         description: "NFT collection"
     })
-    [NFTType.Rambutan]: NFTCollection
+    [NFTCollectionKey.Rambutan]: NFTCollection
 
     @Field(() => NFTCollection, {
         description: "NFT collection"
     })
-    [NFTType.Jackfruit]: NFTCollection
+    [NFTCollectionKey.Jackfruit]: NFTCollection
 }
 
 @ObjectType({
     description: "Each chance for a NFT box"
 })
 export class NFTBoxChance {
-    @Field(() => GraphQLTypeNFTType, {
-        description: "NFT type"
+    @Field(() => GraphQLTypeNFTCollectionKey, {
+        description: "NFT collection key"
     })
-        nftType: NFTType
+        nftCollectionKey: NFTCollectionKey
     @Field(() => Float, {
         description: "Start chance"
     })

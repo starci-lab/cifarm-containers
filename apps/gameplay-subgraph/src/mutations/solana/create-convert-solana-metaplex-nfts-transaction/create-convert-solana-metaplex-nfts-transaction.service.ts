@@ -33,8 +33,8 @@ export class CreateConvertSolanaMetaplexNFTsTransactionService {
         { id }: UserLike,
         {
             convertNFTAddresses,
-            burnNFTType,
-            nftType,
+            burnNFTCollectionKey,
+            nftCollectionKey,
             accountAddress
         }: CreateConvertSolanaMetaplexNFTsTransactionRequest
     ): Promise<CreateConvertSolanaMetaplexNFTsTransactionResponse> {
@@ -68,7 +68,7 @@ export class CreateConvertSolanaMetaplexNFTsTransactionService {
                 const serializedTxs: Array<string> = []
                 const cacheKeys: Array<string> = []
                 const convertedNFTs: Array<ConvertedNFT> = []
-                const burnNFTCollectionData = this.staticService.nftCollections[burnNFTType][
+                const burnNFTCollectionData = this.staticService.nftCollections[burnNFTCollectionKey][
                     user.network
                 ] as NFTCollectionData
                 for (let i = 0; i < nftConverted; i++) {
@@ -93,7 +93,7 @@ export class CreateConvertSolanaMetaplexNFTsTransactionService {
 
                     // mint the nft based on the nft type
 
-                    const nftCollectionData = this.staticService.nftCollections[nftType][
+                    const nftCollectionData = this.staticService.nftCollections[nftCollectionKey][
                         user.network
                     ] as NFTCollectionData
                     const nftName = nftCollectionData.name
@@ -126,7 +126,7 @@ export class CreateConvertSolanaMetaplexNFTsTransactionService {
                             }
                         })
                     builder = builder.add(createMintNFTTransaction)
-                    convertedNFTs.push({ nftName: actualNFTName, nftType, rarity: NFTRarity.Common, nftAddress })
+                    convertedNFTs.push({ nftName: actualNFTName, nftCollectionKey, rarity: NFTRarity.Common, nftAddress })
                     const transaction = await builder
                         .useV0()
                         .setFeePayer(createNoopSigner(publicKey(accountAddress)))

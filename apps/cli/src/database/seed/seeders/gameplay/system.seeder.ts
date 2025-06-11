@@ -16,7 +16,7 @@ import {
     InjectMongoose,
     NFTRarity,
     NFTBoxInfo,
-    NFTType,
+    NFTCollectionKey,
     SystemId,
     SystemSchema,
     RevenueRecipients,
@@ -30,7 +30,8 @@ import {
     Referral,
     NFTConversion,
     EnergyPurchases,
-    LandLimitInfo
+    LandLimitInfo,
+    NFTCollections
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import { AttributeName } from "@src/blockchain"
@@ -445,13 +446,14 @@ export class SystemSeeder implements Seeder {
             },
         }
 
-        const nftCollections = {
-            [NFTType.DragonFruit]: {
+        const nftCollections: NFTCollections = {
+            [NFTCollectionKey.DragonFruit]: {
                 [Network.Testnet]: {
                     placedItemTypeId: createObjectId(PlacedItemTypeId.DragonFruit),
                     name: "Dragon Fruit",
                     collectionAddress: "365jHCcxRigSHZQe99joKnbbFGWhPWsCr3wC7P3jGDmf",
                     imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/dragon-fruit.png",
+                    description: "Dragon fruit grows on a cactus-like plant and is prized for its rarity and vibrant appearance.",
                     fruitStages: {
                         stages: [
                             { stage: 0, imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_1.png" },
@@ -487,6 +489,7 @@ export class SystemSeeder implements Seeder {
                     name: "Dragon Fruit",
                     collectionAddress: "Bz2d2c3j5prkiTwSaPnJmMvhf2mQGS2LJWci3QD1mYYn",
                     imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/dragon-fruit.png",
+                    description: "Dragon fruit grows on a cactus-like plant and is prized for its rarity and vibrant appearance.",
                     fruitStages: {
                         stages: [
                             { stage: 0, imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_1.png" },
@@ -518,12 +521,13 @@ export class SystemSeeder implements Seeder {
                     }
                 }
             },
-            [NFTType.Jackfruit]: {
+            [NFTCollectionKey.Jackfruit]: {
                 [Network.Testnet]: {
                     placedItemTypeId: createObjectId(PlacedItemTypeId.Jackfruit),
                     name: "Jackfruit",
                     collectionAddress: "3Fu3Z6gAFNHcSasFa3XBgDmpyT1JdAGfgy61hsYUqzcu",
                     imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/jackfruit.png",
+                    description: "Jackfruit grows on large tropical trees and is valued for its rarity, size, and unique flavor.",
                     fruitStages: {
                         stages: [
                             { stage: 0, imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_1.png" },
@@ -559,6 +563,7 @@ export class SystemSeeder implements Seeder {
                     name: "Jackfruit",
                     collectionAddress: "5fyfT1qh1xq8MUtUG2VTERNwpQE45L8AYvBWcmQfZe3m",
                     imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/jackfruit.png",
+                    description: "Jackfruit grows on large tropical trees and is valued for its rarity, size, and unique flavor.",
                     fruitStages: {
                         stages: [
                             { stage: 0, imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_1.png" },
@@ -590,12 +595,13 @@ export class SystemSeeder implements Seeder {
                     }
                 }
             },
-            [NFTType.Pomegranate]: {
+            [NFTCollectionKey.Pomegranate]: {
                 [Network.Testnet]: {
                     placedItemTypeId: createObjectId(PlacedItemTypeId.Pomegranate),
                     name: "Pomegranate",
                     collectionAddress: "3QHjGDB9Jc812xLT2JmpnKKL3z6Nod6XGarrZVFk2AEV",
                     imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/pomegranate.png",
+                    description: "With their vibrant ruby-red seeds and rich, tangy taste, pomegranates are rare fruits that grow on trees and are treasured around the world for both their flavor and cultural significance.",
                     fruitStages: {
                         stages: [
                             { stage: 0, imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_1.png" },
@@ -631,6 +637,7 @@ export class SystemSeeder implements Seeder {
                     name: "Pomegranate",
                     collectionAddress: "5Wkwa8TmvQrAnubA9RJfCaJC44QafJbsYgoMfdMu23BA",
                     imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/pomegranate.png",
+                    description: "With their vibrant ruby-red seeds and rich, tangy taste, pomegranates are rare fruits that grow on trees and are treasured around the world for both their flavor and cultural significance.",
                     fruitStages: {
                         stages: [
                             { stage: 0, imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_1.png" },
@@ -662,12 +669,13 @@ export class SystemSeeder implements Seeder {
                     }
                 }
             },
-            [NFTType.Rambutan]: {
+            [NFTCollectionKey.Rambutan]: {
                 [Network.Testnet]: {
                     placedItemTypeId: createObjectId(PlacedItemTypeId.Rambutan),
                     name: "Rambutan",
                     collectionAddress: "2PiEZzrHQEVd3KTsGGrNDiV2vyXuPsNNt3pAFM1huK6s",
                     imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_collection.png",
+                    description: "Rambutan, a tropical fruit with a sweet, tangy flavor, is prized for its rarity and unique appearance.",
                     fruitStages: {
                         stages: [
                             { stage: 0, imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_1.png" },
@@ -703,6 +711,7 @@ export class SystemSeeder implements Seeder {
                     name: "Rambutan",
                     collectionAddress: "ECWpmdiBbAk4JcXnhbrSCnTMia7M8hf4gtfnfD7Q8jM5",
                     imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/rambutan.png",
+                    description: "Rambutan, a tropical fruit with a sweet, tangy flavor, is prized for its rarity and unique appearance.",
                     fruitStages: {
                         stages: [
                             { stage: 0, imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_1.png" },
@@ -743,7 +752,7 @@ export class SystemSeeder implements Seeder {
             decimals: 6,
             profilesTreeAddresses: ["BTjBVuqM9be9LbSy7USu6VFhZcdmAyWfatNRNCAuqdtu"],
             characterModels: {
-                [NFTType.DragonFruit]: {
+                [NFTCollectionKey.DragonFruit]: {
                     testnet: "AoDvMMjnuBpeQ6mAkiuRsHkrYCogF3iGVMgr95oysezM",
                     mainnet: ""
                 }
@@ -761,28 +770,28 @@ export class SystemSeeder implements Seeder {
         const nftBoxInfo: NFTBoxInfo = {
             chances: [
                 {
-                    nftType: NFTType.Jackfruit,
+                    nftCollectionKey: NFTCollectionKey.Jackfruit,
                     startChance: 0,
                     endChance: 0.25,
                     rareRarityChance: 0.8,
                     epicRarityChance: 0.9
                 },
                 {
-                    nftType: NFTType.Pomegranate,
+                    nftCollectionKey: NFTCollectionKey.Pomegranate,
                     startChance: 0.25,
                     endChance: 0.5,
                     rareRarityChance: 0.8,
                     epicRarityChance: 0.9
                 },
                 {
-                    nftType: NFTType.Rambutan,
+                    nftCollectionKey: NFTCollectionKey.Rambutan,
                     startChance: 0.5,
                     endChance: 0.75,
                     rareRarityChance: 0.8,
                     epicRarityChance: 0.9
                 },
                 {
-                    nftType: NFTType.DragonFruit,
+                    nftCollectionKey: NFTCollectionKey.DragonFruit,
                     startChance: 0.75,
                     endChance: 1,
                     rareRarityChance: 0.8,

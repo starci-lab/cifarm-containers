@@ -1,5 +1,5 @@
-import { InputType, Field, ObjectType, Float } from "@nestjs/graphql"
-import { GraphQLTypeNFTType, GraphQLTypeTokenKey, NFTType, TokenKey } from "@src/databases"
+import { InputType, Field, ObjectType, Float, Int } from "@nestjs/graphql"
+import { GraphQLTypeNFTCollectionKey, GraphQLTypeTokenKey, NFTCollectionKey, TokenKey } from "@src/databases"
 import { ChainKey, GraphQLTypeChainKey } from "@src/env"
 import { IsBoolean, IsEnum, IsString, ValidateNested } from "class-validator"
 import { Type } from "class-transformer"
@@ -66,6 +66,11 @@ export class GetBlockchainBalancesResponse {
         description: "Cache to prevent abuse call to rpc"
     })
         cached: boolean
+
+    @Field(() => Int, {
+        description: "Refresh interval"
+    })
+        refreshInterval: number
 }
 
 @InputType({
@@ -84,11 +89,11 @@ export class GetBlockchainCollectionsRequest {
     })
         chainKey: ChainKey
 
-    @IsEnum(NFTType, { each: true })
-    @Field(() => [GraphQLTypeNFTType], {
+    @IsEnum(NFTCollectionKey, { each: true })
+    @Field(() => [GraphQLTypeNFTCollectionKey], {
         description: "NFT type"
     })
-        nftTypes: Array<NFTType>
+        nftCollectionKeys: Array<NFTCollectionKey>
 
     @IsBoolean()
     @Field(() => Boolean, {
@@ -98,16 +103,16 @@ export class GetBlockchainCollectionsRequest {
 }
 
 @ObjectType({
-    description: "NFT trait"
+    description: "NFT attribute"
 })
-export class NFTTrait {
+export class NFTAttribute {
     @Field(() => String, {
-        description: "Trait key"
+        description: "Attribute key"
     })
         key: string
 
     @Field(() => String, {
-        description: "Trait value"
+        description: "Attribute value"
     })
         value: string
 }
@@ -121,10 +126,10 @@ export class BlockchainNFTData {
     })
         nftAddress: string
 
-    @Field(() => [NFTTrait], {
-        description: "NFT traits"
+    @Field(() => [NFTAttribute], {
+        description: "NFT attributes"
     })
-        traits: Array<NFTTrait>
+        attributes: Array<NFTAttribute>
 
     @Field(() => String, {
         description: "NFT image URL"
@@ -152,11 +157,11 @@ export class BlockchainNFTData {
     description: "Token data"
 })
 export class BlockchainCollectionData {
-    @IsEnum(NFTType)
-    @Field(() => GraphQLTypeNFTType, {
+    @IsEnum(NFTCollectionKey)
+    @Field(() => GraphQLTypeNFTCollectionKey, {
         description: "Blockchain token type"
     })
-        nftType: NFTType
+        nftCollectionKey: NFTCollectionKey
 
     @ValidateNested()
     @Type(() => BlockchainNFTData)
@@ -179,4 +184,9 @@ export class GetBlockchainCollectionsResponse {
         description: "Cache to prevent abuse call to rpc"
     })
         cached: boolean
+
+    @Field(() => Int, {
+        description: "Refresh interval"
+    })
+        refreshInterval: number
 }

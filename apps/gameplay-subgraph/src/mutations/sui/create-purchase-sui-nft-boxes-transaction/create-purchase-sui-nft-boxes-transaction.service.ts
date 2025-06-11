@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose, NFTCollectionData, NFTRarity, NFTType } from "@src/databases"
+import { InjectMongoose, NFTCollectionData, NFTRarity, NFTCollectionKey } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 import { UserSchema } from "@src/databases"
@@ -65,7 +65,7 @@ export class CreatePurchaseSuiNFTBoxesTransactionService {
                 for (const nftBox of nftBoxes) {
                     const transaction = new Transaction()
                     // nft collection data
-                    const nftCollectionData = this.staticService.nftCollections[nftBox.nftType][chainKey][
+                    const nftCollectionData = this.staticService.nftCollections[nftBox.nftCollectionKey][chainKey][
                         user.network
                     ] as NFTCollectionData
                     const currentStage = 0
@@ -101,7 +101,7 @@ export class CreatePurchaseSuiNFTBoxesTransactionService {
                     
                     extendedNFTBoxes.push({
                         nftName: nftCollectionData.name,
-                        nftType: nftBox.nftType,
+                        nftCollectionKey: nftBox.nftCollectionKey,
                         rarity: nftBox.rarity
                     })
 
@@ -201,18 +201,18 @@ export class CreatePurchaseSuiNFTBoxesTransactionService {
         for (let i = 0; i < numberOfBoxes; i++) {
             const hashedVector = this.sha256Service.hash(`${vector}-${i}`)
             
-            const computedNFTType = parseInt(hashedVector[0], 16) / 16
+            const computedNFTCollectionKey = parseInt(hashedVector[0], 16) / 16
             const computedRarity = parseInt(hashedVector[1], 16) / 16
 
             const nftBoxChance = this.staticService.nftBoxInfo.chances.find((chance) =>
-                computedNFTType >= chance.startChance && computedNFTType < chance.endChance
+                computedNFTCollectionKey >= chance.startChance && computedNFTCollectionKey < chance.endChance
             )
     
             if (!nftBoxChance) {
                 throw new GraphQLError("NFT starter box chance not found")
             }
     
-            const nftType: NFTType = nftBoxChance.nftType
+            const nftCollectionKey: NFTCollectionKey = nftBoxChance.nftCollectionKey
     
             let rarity: NFTRarity
             if (computedRarity > nftBoxChance.epicRarityChance) {
@@ -223,7 +223,7 @@ export class CreatePurchaseSuiNFTBoxesTransactionService {
                 rarity = NFTRarity.Common
             }
             nftBoxes.push({
-                nftType,
+                nftCollectionKey,
                 rarity
             })
         }
@@ -232,6 +232,6 @@ export class CreatePurchaseSuiNFTBoxesTransactionService {
 }
 
 export interface NFTBox {
-    nftType: NFTType
+    nftCollectionKey: NFTCollectionKey
     rarity: NFTRarity
 }

@@ -4,8 +4,8 @@ import {
     NFT_METADATA,
     PlacedItemSchema,
     NFTMetadataSchema,
-    NFTType,
-    NFTTypeToPlacedItemTypeId,
+    NFTCollectionKey,
+    NFTCollectionKeyToPlacedItemTypeId,
     PlacedItemType,
     FruitCurrentState
 } from "@src/databases"
@@ -110,16 +110,16 @@ export class SendWrapSolanaMetaplexNFTTransactionService {
                 nftMetadata.validated = true
                 await nftMetadata.save({ session })
                 // thus, base on nft type, we create corresponding off-chain, first is about the fruits
-                let nftType: NFTType
-                for (const _nftType of Object.values(NFTType)) {
-                    const found = this.staticService.nftCollections[_nftType][user.network].collectionAddress ===
+                let nftCollectionKey: NFTCollectionKey
+                for (const _nftCollectionKey of Object.values(NFTCollectionKey)) {
+                    const found = this.staticService.nftCollections[_nftCollectionKey][user.network].collectionAddress ===
                         nftMetadata.collectionAddress
                     if (found) {
-                        nftType = _nftType
+                        nftCollectionKey = _nftCollectionKey
                         break
                     }
                 }
-                if (!nftType) {
+                if (!nftCollectionKey) {
                     throw new GraphQLError("NFT type not found", {
                         extensions: {
                             code: "NFT_TYPE_NOT_FOUND"
@@ -127,7 +127,7 @@ export class SendWrapSolanaMetaplexNFTTransactionService {
                     })
                 }
                 const placedItemType = this.staticService.placedItemTypes.find(
-                    (placedItemType) => placedItemType.displayId === NFTTypeToPlacedItemTypeId[nftType]
+                    (placedItemType) => placedItemType.displayId === NFTCollectionKeyToPlacedItemTypeId[nftCollectionKey]
                 )
                 if (!placedItemType) {
                     throw new GraphQLError("Placed item type not found", {
@@ -138,7 +138,7 @@ export class SendWrapSolanaMetaplexNFTTransactionService {
                 }
                 switch (placedItemType.type) {
                 case PlacedItemType.Fruit: {
-                    const placedItemTypeId = NFTTypeToPlacedItemTypeId[nftType]
+                    const placedItemTypeId = NFTCollectionKeyToPlacedItemTypeId[nftCollectionKey]
                     const placedItemType = this.staticService.placedItemTypes.find(
                         (placedItemType) => placedItemType.displayId === placedItemTypeId
                     )

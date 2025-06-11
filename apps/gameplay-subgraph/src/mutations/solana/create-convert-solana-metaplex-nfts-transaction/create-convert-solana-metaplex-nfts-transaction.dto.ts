@@ -1,5 +1,5 @@
 import { Field, InputType, ObjectType } from "@nestjs/graphql"
-import { GraphQLTypeNFTType, NFTType } from "@src/databases"
+import { GraphQLTypeNFTCollectionKey, NFTCollectionKey } from "@src/databases"
 import { IResponseLike, ResponseLike } from "@src/graphql"
 import { IsBase58, IsEnum } from "class-validator"
 
@@ -11,13 +11,13 @@ export class CreateConvertSolanaMetaplexNFTsTransactionRequest {
     @Field(() => [String])
         convertNFTAddresses: Array<string>
 
-    @IsEnum(NFTType)
-    @Field(() => GraphQLTypeNFTType)
-        burnNFTType: NFTType
+    @IsEnum(NFTCollectionKey)
+    @Field(() => GraphQLTypeNFTCollectionKey)
+        burnNFTCollectionKey: NFTCollectionKey
 
-    @IsEnum(NFTType)
-    @Field(() => GraphQLTypeNFTType)
-        nftType: NFTType
+    @IsEnum(NFTCollectionKey)
+    @Field(() => GraphQLTypeNFTCollectionKey)
+        nftCollectionKey: NFTCollectionKey
 
     @IsBase58()
     @Field(() => String)

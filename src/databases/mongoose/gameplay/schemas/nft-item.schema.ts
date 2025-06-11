@@ -35,10 +35,10 @@ export class NFTItemSchema extends AbstractSchema {
         chainKey: ChainKey
 
     @Field(() => JSON, {
-        description: "Traits of the NFT item"
+        description: "Attributes of the NFT item"
     })
     @Prop({ type: Object, required: true })
-        traits: object
+        attributes: object
 
     @Field(() => String, {
         description: "The nft address"

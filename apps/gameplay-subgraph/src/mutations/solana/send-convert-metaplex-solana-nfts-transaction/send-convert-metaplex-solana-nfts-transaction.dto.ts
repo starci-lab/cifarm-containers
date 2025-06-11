@@ -1,5 +1,5 @@
 import { Field, InputType, ObjectType } from "@nestjs/graphql"
-import { GraphQLTypeNFTRarity, GraphQLTypeNFTType, NFTRarity, NFTType } from "@src/databases"
+import { GraphQLTypeNFTRarity, GraphQLTypeNFTCollectionKey, NFTRarity, NFTCollectionKey } from "@src/databases"
 import { IResponseLike, ResponseLike } from "@src/graphql"
 import { IsBase58 } from "class-validator"
 
@@ -20,8 +20,8 @@ export class GraphQLConvertedNFT {
     @Field(() => String, { description: "The NFT name" })
         nftName: string
 
-    @Field(() => GraphQLTypeNFTType, { description: "The NFT type" })
-        nftType: NFTType
+    @Field(() => GraphQLTypeNFTCollectionKey, { description: "The NFT type" })
+        nftCollectionKey: NFTCollectionKey
 
     @Field(() => GraphQLTypeNFTRarity, { description: "The NFT rarity" })
         rarity: NFTRarity   

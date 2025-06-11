@@ -256,49 +256,49 @@ registerEnumType(GraphQLTypePetType, {
     }
 })
 
-export enum NFTType {
+export enum NFTCollectionKey {
     DragonFruit = "dragonFruit",
     Jackfruit = "jackfruit",
     Rambutan = "rambutan",
     Pomegranate = "pomegranate"
 }
 
-export const GraphQLTypeNFTType = createEnumType(NFTType)
+export const GraphQLTypeNFTCollectionKey = createEnumType(NFTCollectionKey)
 
-registerEnumType(GraphQLTypeNFTType, {
-    name: "NFTType",
+registerEnumType(GraphQLTypeNFTCollectionKey, {
+    name: "NFTCollectionKey",
     description: "The type of NFT",
     valuesMap: {
-        [NFTType.DragonFruit]: {
+        [NFTCollectionKey.DragonFruit]: {
             description: "The dragon fruit NFT"
         },
-        [NFTType.Jackfruit]: {
+        [NFTCollectionKey.Jackfruit]: {
             description: "The jackfruit NFT"
         },
-        [NFTType.Rambutan]: {
+        [NFTCollectionKey.Rambutan]: {
             description: "The rambutan NFT"
         },
-        [NFTType.Pomegranate]: {
+        [NFTCollectionKey.Pomegranate]: {
             description: "The pomegranate NFT"
         }
     }
 })
 
-export const NFTTypeToPlacedItemTypeId: Record<NFTType, PlacedItemTypeId> = {
-    [NFTType.DragonFruit]: PlacedItemTypeId.DragonFruit,
-    [NFTType.Jackfruit]: PlacedItemTypeId.Jackfruit,
-    [NFTType.Rambutan]: PlacedItemTypeId.Rambutan,
-    [NFTType.Pomegranate]: PlacedItemTypeId.Pomegranate
+export const NFTCollectionKeyToPlacedItemTypeId: Record<NFTCollectionKey, PlacedItemTypeId> = {
+    [NFTCollectionKey.DragonFruit]: PlacedItemTypeId.DragonFruit,
+    [NFTCollectionKey.Jackfruit]: PlacedItemTypeId.Jackfruit,
+    [NFTCollectionKey.Rambutan]: PlacedItemTypeId.Rambutan,
+    [NFTCollectionKey.Pomegranate]: PlacedItemTypeId.Pomegranate
 }
 
-export const placedItemTypeIdToNFTType: Partial<Record<PlacedItemTypeId, NFTType>> = Object.entries(
-    NFTTypeToPlacedItemTypeId
+export const placedItemTypeIdToNFTCollectionKey: Partial<Record<PlacedItemTypeId, NFTCollectionKey>> = Object.entries(
+    NFTCollectionKeyToPlacedItemTypeId
 ).reduce(
     (acc, [key, value]) => {
-        acc[value] = key as NFTType
+        acc[value] = key as NFTCollectionKey
         return acc
     },
-    {} as Partial<Record<PlacedItemTypeId, NFTType>>
+    {} as Partial<Record<PlacedItemTypeId, NFTCollectionKey>>
 )
 
 export enum NFTRarity {

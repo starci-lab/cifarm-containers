@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose, NFTCollectionData, NFTMetadataSchema, PlacedItemSchema, placedItemTypeIdToNFTType } from "@src/databases"
+import { InjectMongoose, NFTCollectionData, NFTMetadataSchema, PlacedItemSchema, placedItemTypeIdToNFTCollectionKey } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 import {
@@ -123,7 +123,7 @@ export class SendUnwrapSolanaMetaplexNFTTransactionService {
                     (placedItemType) => placedItemType.id === placedItem.placedItemType.toString()
                 )
                 const nftCollectionData = this.staticService.nftCollections[
-                    placedItemTypeIdToNFTType[placedItemType.displayId]
+                    placedItemTypeIdToNFTCollectionKey[placedItemType.displayId]
                 ][
                     user.network
                 ] as NFTCollectionData
