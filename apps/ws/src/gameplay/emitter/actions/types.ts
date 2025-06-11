@@ -30,6 +30,10 @@ export interface ThiefAnimalData {
     catAssistedSuccess?: boolean
 }
 
+export enum HelpUseWateringCanReasonCode {
+    NotNeedWater = "not_need_water",
+}
+
 export enum ThiefAnimalReasonCode {
     DogAssisted = "dog_assisted"
 }

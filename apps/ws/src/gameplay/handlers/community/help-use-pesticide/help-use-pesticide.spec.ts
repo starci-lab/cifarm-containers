@@ -1,7 +1,8 @@
-// npx jest apps/ws/src/gameplay/handlers/farming/use-watering-can/use-watering-can.spec.ts
+// npx jest apps/ws/src/gameplay/handlers/community/help-use-pesticide/help-use-pesticide.spec.ts
 
 import { Test } from "@nestjs/testing"
-import { UseWateringCanService } from "./use-watering-can.service"
+import { HelpUsePesticideService } from "./help-use-pesticide.service"
+import { UsePesticideService } from "../../farming/use-pesticide/use-pesticide.service"
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import { 
     CropId, 
@@ -16,40 +17,42 @@ import {
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
-import { EmitActionPayload } from "@apps/ws/src"
-import { UseWateringCanReasonCode } from "./types"
+import { EmitActionPayload } from "../../../emitter"
+import { HelpUsePesticideReasonCode } from "./types"
 
-describe("UseWateringCanService", () => {
-    let service: UseWateringCanService
+describe("HelpUsePesticideService", () => {
+    let service: HelpUsePesticideService
     let connection: Connection
     let gameplayMockUserService: GameplayMockUserService
     let gameplayConnectionService: GameplayConnectionService
+    let usePesticideService: UsePesticideService
 
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
             imports: [TestingInfraModule.register()],
-            providers: [UseWateringCanService]
+            providers: [UsePesticideService, HelpUsePesticideService]
         }).compile()
         const app = moduleRef.createNestApplication()
         await app.init()
 
         connection = moduleRef.get(getMongooseToken())
-        service = moduleRef.get(UseWateringCanService)
+        service = moduleRef.get(HelpUsePesticideService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
         gameplayConnectionService = moduleRef.get(GameplayConnectionService)
+        usePesticideService = moduleRef.get(UsePesticideService)
     })
 
-    it("should successfully use watering can", async () => {
+    it("should successfully help use pesticide", async () => {
         const user = await gameplayMockUserService.generate() // Generate a user for testing
-
+        const neighbor = await gameplayMockUserService.generate()
         const placedItemTile = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
-            user: user.id,
+            user: neighbor.id,
             tileInfo: {},
             plantInfo: {
                 crop: createObjectId(CropId.Turnip),
-                currentStage: 2,
+                currentStage: 3,
                 plantType: PlantType.Crop,
-                currentState: PlantCurrentState.NeedWater,
+                currentState: PlantCurrentState.IsInfested,
                 harvestCount: 20,
             },
             x: 0,
@@ -58,12 +61,12 @@ describe("UseWateringCanService", () => {
         })
         await connection.model<InventorySchema>(InventorySchema.name).create({
             user: user.id,
-            inventoryType: createObjectId(InventoryTypeId.WateringCan),
+            inventoryType: createObjectId(InventoryTypeId.Pesticide),
             kind: InventoryKind.Tool,
             index: 0,
         })  
-        // harvest 
-        const { placedItems, action } = await service.useWateringCan(user, {
+        // help use pesticide
+        const { placedItems, action, watcherUserId } = await service.helpUsePesticide(user, {
             placedItemTileId: placedItemTile.id
         })
         // check result
@@ -71,18 +74,20 @@ describe("UseWateringCanService", () => {
         expect(updatedPlacedItem.plantInfo.currentState).toBe(PlantCurrentState.Normal)
         expect(action.success).toBe(true)
         expect(placedItems.length).toBe(1)
+        expect(watcherUserId).toBe(neighbor.id.toString())
     })
 
-    it("should throw error if use watering can 2 times", async () => {
+    it("should throw error if user use pesticide before help", async () => {
         const user = await gameplayMockUserService.generate()
+        const neighbor = await gameplayMockUserService.generate()
         const placedItemTile = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
-            user: user.id,
+            user: neighbor.id,
             tileInfo: {},
             plantInfo: {
                 crop: createObjectId(CropId.Turnip),
                 currentStage: 2,
                 plantType: PlantType.Crop,
-                currentState: PlantCurrentState.NeedWater,
+                currentState: PlantCurrentState.IsInfested,
                 harvestCount: 20,
             },
             x: 0,
@@ -91,30 +96,33 @@ describe("UseWateringCanService", () => {
         })
         await connection.model<InventorySchema>(InventorySchema.name).create({
             user: user.id,
-            inventoryType: createObjectId(InventoryTypeId.WateringCan),
+            inventoryType: createObjectId(InventoryTypeId.Pesticide),
             kind: InventoryKind.Tool,
             index: 0,
         })
         await connection.model<InventorySchema>(InventorySchema.name).create({
-            user: user.id,  
-            inventoryType: createObjectId(InventoryTypeId.WateringCan),
+            user: neighbor.id,
+            inventoryType: createObjectId(InventoryTypeId.Pesticide),
             kind: InventoryKind.Tool,
             index: 1,
         })
         let action: EmitActionPayload
         await Promise.all([
-            service.useWateringCan(user, {
+            usePesticideService.usePesticide(neighbor, {
                 placedItemTileId: placedItemTile.id
             }),
             (async () => {
+                // wait 10ms
+                // await new Promise(resolve => setTimeout(resolve, 10))
+                // help use pesticide
                 try {
                     const { 
-                        action: useAction, 
-                    } = await service.useWateringCan(user, {
+                        action: helpAction, 
+                    } = await service.helpUsePesticide(user, {
                         placedItemTileId: placedItemTile.id
                     })
-                    action = useAction
-                    console.log(useAction)
+                    action = helpAction
+                    console.log(helpAction)
                 } catch (error) {
                     console.log(error)
                 }
@@ -122,7 +130,9 @@ describe("UseWateringCanService", () => {
         ])
         // check result
         expect(action.success).toBe(false)
-        expect(action.reasonCode).toBe(UseWateringCanReasonCode.NotNeedWateringCan)
+        expect(action.reasonCode).toBe(HelpUsePesticideReasonCode.NotNeedPesticide)
+        //expect(placedItems.length).toBe(1)
+        //expect(watcherUserId).toBe(neighbor.id.toString())
     })
 
     afterAll(async () => {

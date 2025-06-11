@@ -1,120 +1,117 @@
-// npx jest apps/ws/src/gameplay/handlers/farming/use-watering-can/use-watering-can.spec.ts
-
+// npx jest apps/ws/src/gameplay/handlers/community/help-use-animal-medicine/help-use-animal-medicine.spec.ts
 import { Test } from "@nestjs/testing"
-import { UseWateringCanService } from "./use-watering-can.service"
+import { HelpUseAnimalMedicineService } from "./help-use-animal-medicine.service"
+import { UseAnimalMedicineService } from "../../farming/use-animal-medicine/use-animal-medicine.service"
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import { 
-    CropId, 
     getMongooseToken,
     InventoryKind, 
     InventorySchema,
     InventoryTypeId, 
     PlacedItemSchema, 
     PlacedItemTypeId,
-    PlantCurrentState, 
-    PlantType 
+    AnimalCurrentState,
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
-import { EmitActionPayload } from "@apps/ws/src"
-import { UseWateringCanReasonCode } from "./types"
+import { EmitActionPayload } from "../../../emitter"
+import { HelpUseAnimalMedicineReasonCode } from "./types"
 
-describe("UseWateringCanService", () => {
-    let service: UseWateringCanService
+describe("HelpUseAnimalMedicineService", () => {
+    let service: HelpUseAnimalMedicineService
     let connection: Connection
     let gameplayMockUserService: GameplayMockUserService
     let gameplayConnectionService: GameplayConnectionService
+    let useAnimalMedicineService: UseAnimalMedicineService
 
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
             imports: [TestingInfraModule.register()],
-            providers: [UseWateringCanService]
+            providers: [UseAnimalMedicineService, HelpUseAnimalMedicineService]
         }).compile()
         const app = moduleRef.createNestApplication()
         await app.init()
 
         connection = moduleRef.get(getMongooseToken())
-        service = moduleRef.get(UseWateringCanService)
+        service = moduleRef.get(HelpUseAnimalMedicineService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
         gameplayConnectionService = moduleRef.get(GameplayConnectionService)
+        useAnimalMedicineService = moduleRef.get(UseAnimalMedicineService)
     })
 
-    it("should successfully use watering can", async () => {
+    it("should successfully help use animal medicine", async () => {
         const user = await gameplayMockUserService.generate() // Generate a user for testing
-
+        const neighbor = await gameplayMockUserService.generate()
         const placedItemTile = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
-            user: user.id,
+            user: neighbor.id,
             tileInfo: {},
-            plantInfo: {
-                crop: createObjectId(CropId.Turnip),
-                currentStage: 2,
-                plantType: PlantType.Crop,
-                currentState: PlantCurrentState.NeedWater,
-                harvestCount: 20,
+            animalInfo: {
+                currentState: AnimalCurrentState.Sick,
             },
             x: 0,
             y: 0,
-            placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
+            placedItemType: createObjectId(PlacedItemTypeId.Chicken)
         })
         await connection.model<InventorySchema>(InventorySchema.name).create({
             user: user.id,
-            inventoryType: createObjectId(InventoryTypeId.WateringCan),
+            inventoryType: createObjectId(InventoryTypeId.AnimalMedicine),
             kind: InventoryKind.Tool,
             index: 0,
         })  
-        // harvest 
-        const { placedItems, action } = await service.useWateringCan(user, {
-            placedItemTileId: placedItemTile.id
+        // help use animal medicine
+        const { placedItems, action, watcherUserId } = await service.helpUseAnimalMedicine(user, {
+            placedItemAnimalId: placedItemTile.id
         })
         // check result
         const updatedPlacedItem = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).findById(placedItemTile.id)
-        expect(updatedPlacedItem.plantInfo.currentState).toBe(PlantCurrentState.Normal)
+        expect(updatedPlacedItem.animalInfo.currentState).toBe(AnimalCurrentState.Normal)
         expect(action.success).toBe(true)
         expect(placedItems.length).toBe(1)
+        expect(watcherUserId).toBe(neighbor.id.toString())
     })
 
-    it("should throw error if use watering can 2 times", async () => {
+    it("should throw error if user use animal medicine before help", async () => {
         const user = await gameplayMockUserService.generate()
+        const neighbor = await gameplayMockUserService.generate()
         const placedItemTile = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
-            user: user.id,
+            user: neighbor.id,
             tileInfo: {},
-            plantInfo: {
-                crop: createObjectId(CropId.Turnip),
-                currentStage: 2,
-                plantType: PlantType.Crop,
-                currentState: PlantCurrentState.NeedWater,
-                harvestCount: 20,
+            animalInfo: {
+                currentState: AnimalCurrentState.Sick,
             },
             x: 0,
             y: 0,
-            placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
+            placedItemType: createObjectId(PlacedItemTypeId.Chicken)
         })
         await connection.model<InventorySchema>(InventorySchema.name).create({
             user: user.id,
-            inventoryType: createObjectId(InventoryTypeId.WateringCan),
+            inventoryType: createObjectId(InventoryTypeId.AnimalMedicine),
             kind: InventoryKind.Tool,
             index: 0,
         })
         await connection.model<InventorySchema>(InventorySchema.name).create({
-            user: user.id,  
-            inventoryType: createObjectId(InventoryTypeId.WateringCan),
+            user: neighbor.id,
+            inventoryType: createObjectId(InventoryTypeId.AnimalMedicine),
             kind: InventoryKind.Tool,
             index: 1,
         })
         let action: EmitActionPayload
         await Promise.all([
-            service.useWateringCan(user, {
-                placedItemTileId: placedItemTile.id
+            useAnimalMedicineService.useAnimalMedicine(neighbor, {
+                placedItemAnimalId: placedItemTile.id
             }),
             (async () => {
+                // wait 10ms
+                // await new Promise(resolve => setTimeout(resolve, 10))
+                // help use animal medicine
                 try {
                     const { 
-                        action: useAction, 
-                    } = await service.useWateringCan(user, {
-                        placedItemTileId: placedItemTile.id
+                        action: helpAction, 
+                    } = await service.helpUseAnimalMedicine(user, {
+                        placedItemAnimalId: placedItemTile.id
                     })
-                    action = useAction
-                    console.log(useAction)
+                    action = helpAction
+                    console.log(helpAction)
                 } catch (error) {
                     console.log(error)
                 }
@@ -122,7 +119,9 @@ describe("UseWateringCanService", () => {
         ])
         // check result
         expect(action.success).toBe(false)
-        expect(action.reasonCode).toBe(UseWateringCanReasonCode.NotNeedWateringCan)
+        expect(action.reasonCode).toBe(HelpUseAnimalMedicineReasonCode.NotNeedAnimalMedicine)
+        //expect(placedItems.length).toBe(1)
+        //expect(watcherUserId).toBe(neighbor.id.toString())
     })
 
     afterAll(async () => {

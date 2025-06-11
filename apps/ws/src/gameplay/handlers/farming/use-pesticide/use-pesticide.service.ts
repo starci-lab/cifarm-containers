@@ -17,6 +17,7 @@ import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
+import { UsePesticideReasonCode } from "./types"
 
 @Injectable()
 export class UsePesticideService {
@@ -103,6 +104,13 @@ export class UsePesticideService {
 
                 // Check if the plant has pests
                 if (placedItemTile.plantInfo.currentState !== PlantCurrentState.IsInfested) {
+                    actionPayload = {
+                        action: ActionName.UsePesticide,
+                        placedItem: syncedPlacedItemAction,
+                        reasonCode: UsePesticideReasonCode.NotNeedPesticide,
+                        success: false,
+                        userId
+                    }
                     throw new WsException("Plant does not have pests")
                 }
 

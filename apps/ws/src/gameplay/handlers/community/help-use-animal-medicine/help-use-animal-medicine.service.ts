@@ -21,6 +21,7 @@ import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
+import { HelpUseAnimalMedicineReasonCode } from "./types"
 
 @Injectable()
 export class HelpUseAnimalMedicineService {
@@ -109,6 +110,13 @@ export class HelpUseAnimalMedicineService {
 
                 // Validate animal needs medicine
                 if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick) {
+                    actionPayload = {
+                        action: ActionName.HelpUseAnimalMedicine,
+                        placedItem: syncedPlacedItemAction,
+                        reasonCode: HelpUseAnimalMedicineReasonCode.NotNeedAnimalMedicine,
+                        success: false,
+                        userId
+                    }
                     throw new WsException("Animal does not need medicine")
                 }
 

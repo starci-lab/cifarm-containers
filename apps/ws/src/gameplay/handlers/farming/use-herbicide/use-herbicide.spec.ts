@@ -1,7 +1,6 @@
-// npx jest apps/ws/src/gameplay/handlers/farming/use-watering-can/use-watering-can.spec.ts
+// npx jest apps/ws/src/gameplay/handlers/farming/use-herbicide/use-herbicide.spec.ts
 
 import { Test } from "@nestjs/testing"
-import { UseWateringCanService } from "./use-watering-can.service"
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import { 
     CropId, 
@@ -17,10 +16,11 @@ import {
 import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
 import { EmitActionPayload } from "@apps/ws/src"
-import { UseWateringCanReasonCode } from "./types"
+import { UseHerbicideReasonCode } from "./types"
+import { UseHerbicideService } from "./use-herbicide.service"
 
-describe("UseWateringCanService", () => {
-    let service: UseWateringCanService
+describe("UseHerbicideService", () => {
+    let service: UseHerbicideService
     let connection: Connection
     let gameplayMockUserService: GameplayMockUserService
     let gameplayConnectionService: GameplayConnectionService
@@ -28,18 +28,18 @@ describe("UseWateringCanService", () => {
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
             imports: [TestingInfraModule.register()],
-            providers: [UseWateringCanService]
+            providers: [UseHerbicideService]
         }).compile()
         const app = moduleRef.createNestApplication()
         await app.init()
 
         connection = moduleRef.get(getMongooseToken())
-        service = moduleRef.get(UseWateringCanService)
+        service = moduleRef.get(UseHerbicideService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
         gameplayConnectionService = moduleRef.get(GameplayConnectionService)
     })
 
-    it("should successfully use watering can", async () => {
+    it("should successfully use herbicide", async () => {
         const user = await gameplayMockUserService.generate() // Generate a user for testing
 
         const placedItemTile = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
@@ -49,7 +49,7 @@ describe("UseWateringCanService", () => {
                 crop: createObjectId(CropId.Turnip),
                 currentStage: 2,
                 plantType: PlantType.Crop,
-                currentState: PlantCurrentState.NeedWater,
+                currentState: PlantCurrentState.IsWeedy,
                 harvestCount: 20,
             },
             x: 0,
@@ -58,12 +58,12 @@ describe("UseWateringCanService", () => {
         })
         await connection.model<InventorySchema>(InventorySchema.name).create({
             user: user.id,
-            inventoryType: createObjectId(InventoryTypeId.WateringCan),
+            inventoryType: createObjectId(InventoryTypeId.Herbicide),
             kind: InventoryKind.Tool,
             index: 0,
         })  
         // harvest 
-        const { placedItems, action } = await service.useWateringCan(user, {
+        const { placedItems, action } = await service.useHerbicide(user, {
             placedItemTileId: placedItemTile.id
         })
         // check result
@@ -73,7 +73,7 @@ describe("UseWateringCanService", () => {
         expect(placedItems.length).toBe(1)
     })
 
-    it("should throw error if use watering can 2 times", async () => {
+    it("should throw error if use herbicide 2 times", async () => {
         const user = await gameplayMockUserService.generate()
         const placedItemTile = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
             user: user.id,
@@ -82,7 +82,7 @@ describe("UseWateringCanService", () => {
                 crop: createObjectId(CropId.Turnip),
                 currentStage: 2,
                 plantType: PlantType.Crop,
-                currentState: PlantCurrentState.NeedWater,
+                currentState: PlantCurrentState.IsWeedy,
                 harvestCount: 20,
             },
             x: 0,
@@ -91,26 +91,20 @@ describe("UseWateringCanService", () => {
         })
         await connection.model<InventorySchema>(InventorySchema.name).create({
             user: user.id,
-            inventoryType: createObjectId(InventoryTypeId.WateringCan),
+            inventoryType: createObjectId(InventoryTypeId.Herbicide),
             kind: InventoryKind.Tool,
             index: 0,
         })
-        await connection.model<InventorySchema>(InventorySchema.name).create({
-            user: user.id,  
-            inventoryType: createObjectId(InventoryTypeId.WateringCan),
-            kind: InventoryKind.Tool,
-            index: 1,
-        })
         let action: EmitActionPayload
         await Promise.all([
-            service.useWateringCan(user, {
+            service.useHerbicide(user, {
                 placedItemTileId: placedItemTile.id
             }),
             (async () => {
                 try {
                     const { 
                         action: useAction, 
-                    } = await service.useWateringCan(user, {
+                    } = await service.useHerbicide(user, {
                         placedItemTileId: placedItemTile.id
                     })
                     action = useAction
@@ -122,7 +116,7 @@ describe("UseWateringCanService", () => {
         ])
         // check result
         expect(action.success).toBe(false)
-        expect(action.reasonCode).toBe(UseWateringCanReasonCode.NotNeedWateringCan)
+        expect(action.reasonCode).toBe(UseHerbicideReasonCode.NotNeedHerbicide)
     })
 
     afterAll(async () => {

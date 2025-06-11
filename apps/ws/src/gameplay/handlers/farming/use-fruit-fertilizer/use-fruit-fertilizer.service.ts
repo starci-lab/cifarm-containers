@@ -111,12 +111,12 @@ export class UseFruitFertilizerService {
 
                 // Validate tile has fruit tree
                 if (!placedItemFruit.fruitInfo) {
-                    throw new WsException("Tile has no fruit tree")
+                    throw new WsException("Placed item is not fruit")
                 }
 
                 // Validate tile needs fertilizer
                 if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.NeedFertilizer) {
-                    throw new WsException("Tile does not need fertilizer")
+                    throw new WsException("Fruit does not need fertilizer")
                 }
 
                 // Save a copy of the placed item for syncing

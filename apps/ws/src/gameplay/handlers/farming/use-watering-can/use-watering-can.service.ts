@@ -17,6 +17,7 @@ import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
+import { UseWateringCanReasonCode } from "./types"
 
 @Injectable()
 export class UseWateringCanService {
@@ -104,6 +105,13 @@ export class UseWateringCanService {
 
                 // Check if the plant needs water
                 if (placedItemTile.plantInfo.currentState !== PlantCurrentState.NeedWater) {
+                    actionPayload = {
+                        action: ActionName.UseWateringCan,
+                        placedItem: syncedPlacedItemAction,
+                        reasonCode: UseWateringCanReasonCode.NotNeedWateringCan,
+                        success: false,
+                        userId
+                    }
                     throw new WsException("Plant does not need water")
                 }
                 // Add to synced placed items

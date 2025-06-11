@@ -1,120 +1,119 @@
-// npx jest apps/ws/src/gameplay/handlers/farming/use-watering-can/use-watering-can.spec.ts
-
+// npx jest apps/ws/src/gameplay/handlers/community/help-use-bug-net/help-use-bug-net.spec.ts
 import { Test } from "@nestjs/testing"
-import { UseWateringCanService } from "./use-watering-can.service"
+import { HelpUseBugNetService } from "./help-use-bug-net.service"
+import { UseBugNetService } from "../../farming/use-bug-net/use-bug-net.service"
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import { 
-    CropId, 
+    FruitCurrentState, 
     getMongooseToken,
     InventoryKind, 
     InventorySchema,
     InventoryTypeId, 
     PlacedItemSchema, 
     PlacedItemTypeId,
-    PlantCurrentState, 
-    PlantType 
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
-import { EmitActionPayload } from "@apps/ws/src"
-import { UseWateringCanReasonCode } from "./types"
+import { EmitActionPayload } from "../../../emitter"
+import { HelpUseBugNetReasonCode } from "./types"
 
-describe("UseWateringCanService", () => {
-    let service: UseWateringCanService
+describe("HelpUseBugNetService", () => {
+    let service: HelpUseBugNetService
     let connection: Connection
     let gameplayMockUserService: GameplayMockUserService
     let gameplayConnectionService: GameplayConnectionService
+    let useBugNetService: UseBugNetService
 
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
             imports: [TestingInfraModule.register()],
-            providers: [UseWateringCanService]
+            providers: [UseBugNetService, HelpUseBugNetService]
         }).compile()
         const app = moduleRef.createNestApplication()
         await app.init()
 
         connection = moduleRef.get(getMongooseToken())
-        service = moduleRef.get(UseWateringCanService)
+        service = moduleRef.get(HelpUseBugNetService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
         gameplayConnectionService = moduleRef.get(GameplayConnectionService)
+        useBugNetService = moduleRef.get(UseBugNetService)
     })
 
-    it("should successfully use watering can", async () => {
+    it("should successfully help use bug net", async () => {
         const user = await gameplayMockUserService.generate() // Generate a user for testing
-
+        const neighbor = await gameplayMockUserService.generate()
         const placedItemTile = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
-            user: user.id,
+            user: neighbor.id,
             tileInfo: {},
-            plantInfo: {
-                crop: createObjectId(CropId.Turnip),
-                currentStage: 2,
-                plantType: PlantType.Crop,
-                currentState: PlantCurrentState.NeedWater,
-                harvestCount: 20,
+            fruitInfo: {
+                currentStage: 3,
+                currentState: FruitCurrentState.IsBuggy,
             },
             x: 0,
             y: 0,
-            placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
+            placedItemType: createObjectId(PlacedItemTypeId.Apple)
         })
         await connection.model<InventorySchema>(InventorySchema.name).create({
             user: user.id,
-            inventoryType: createObjectId(InventoryTypeId.WateringCan),
+            inventoryType: createObjectId(InventoryTypeId.BugNet),
             kind: InventoryKind.Tool,
             index: 0,
         })  
-        // harvest 
-        const { placedItems, action } = await service.useWateringCan(user, {
-            placedItemTileId: placedItemTile.id
+        // help use bug net
+        const { placedItems, action, watcherUserId } = await service.helpUseBugNet(user, {
+            placedItemFruitId: placedItemTile.id
         })
         // check result
         const updatedPlacedItem = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).findById(placedItemTile.id)
-        expect(updatedPlacedItem.plantInfo.currentState).toBe(PlantCurrentState.Normal)
+        expect(updatedPlacedItem.fruitInfo.currentState).toBe(FruitCurrentState.Normal)
         expect(action.success).toBe(true)
         expect(placedItems.length).toBe(1)
+        expect(watcherUserId).toBe(neighbor.id.toString())
     })
 
-    it("should throw error if use watering can 2 times", async () => {
+    it("should throw error if user use bug net before help", async () => {
         const user = await gameplayMockUserService.generate()
+        const neighbor = await gameplayMockUserService.generate()
         const placedItemTile = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
-            user: user.id,
+            user: neighbor.id,
             tileInfo: {},
-            plantInfo: {
-                crop: createObjectId(CropId.Turnip),
-                currentStage: 2,
-                plantType: PlantType.Crop,
-                currentState: PlantCurrentState.NeedWater,
-                harvestCount: 20,
+            fruitInfo: {
+                currentStage: 3,
+                currentState: FruitCurrentState.IsBuggy,
             },
             x: 0,
             y: 0,
-            placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
+            placedItemType: createObjectId(PlacedItemTypeId.Apple)
         })
         await connection.model<InventorySchema>(InventorySchema.name).create({
             user: user.id,
-            inventoryType: createObjectId(InventoryTypeId.WateringCan),
+            inventoryType: createObjectId(InventoryTypeId.BugNet),
             kind: InventoryKind.Tool,
             index: 0,
         })
         await connection.model<InventorySchema>(InventorySchema.name).create({
-            user: user.id,  
-            inventoryType: createObjectId(InventoryTypeId.WateringCan),
+            user: neighbor.id,
+            inventoryType: createObjectId(InventoryTypeId.BugNet),
             kind: InventoryKind.Tool,
             index: 1,
         })
         let action: EmitActionPayload
         await Promise.all([
-            service.useWateringCan(user, {
-                placedItemTileId: placedItemTile.id
+            useBugNetService.useBugNet(neighbor, {
+                placedItemFruitId: placedItemTile.id
             }),
             (async () => {
+                // wait 10ms
+                // await new Promise(resolve => setTimeout(resolve, 10))
+                // help use bug net
                 try {
                     const { 
-                        action: useAction, 
-                    } = await service.useWateringCan(user, {
-                        placedItemTileId: placedItemTile.id
+                        action: helpAction, 
+                    } = await service.helpUseBugNet(user, {
+                        placedItemFruitId: placedItemTile.id
                     })
-                    action = useAction
-                    console.log(useAction)
+                    action = helpAction
+                    console.log(helpAction)
                 } catch (error) {
                     console.log(error)
                 }
@@ -122,7 +121,9 @@ describe("UseWateringCanService", () => {
         ])
         // check result
         expect(action.success).toBe(false)
-        expect(action.reasonCode).toBe(UseWateringCanReasonCode.NotNeedWateringCan)
+        expect(action.reasonCode).toBe(HelpUseBugNetReasonCode.NotNeedBugNet)
+        //expect(placedItems.length).toBe(1)
+        //expect(watcherUserId).toBe(neighbor.id.toString())
     })
 
     afterAll(async () => {

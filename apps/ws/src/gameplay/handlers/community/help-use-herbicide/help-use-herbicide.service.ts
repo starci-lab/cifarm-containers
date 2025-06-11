@@ -21,7 +21,8 @@ import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
-
+import { HelpUseHerbicideReasonCode } from "./types"
+    
 @Injectable()
 export class HelpUseHerbicideService {
     private readonly logger = new Logger(HelpUseHerbicideService.name)
@@ -108,6 +109,13 @@ export class HelpUseHerbicideService {
 
                 // Validate tile needs herbicide
                 if (placedItemTile.plantInfo.currentState !== PlantCurrentState.IsWeedy) {
+                    actionPayload = {
+                        action: ActionName.HelpUseHerbicide,
+                        placedItem: syncedPlacedItemAction,
+                        reasonCode: HelpUseHerbicideReasonCode.NotNeedHerbicide,
+                        success: false,
+                        userId
+                    }
                     throw new WsException("Tile does not need herbicide")
                 }
 

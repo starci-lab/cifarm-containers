@@ -9,7 +9,6 @@ import {
     UserSchema 
 } from "@src/databases"
 import { 
-    CoreService,
     EnergyService, 
     LevelService, 
     SyncService 
@@ -22,6 +21,7 @@ import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
+import { UseBugNetReasonCode } from "./types"
 
 @Injectable()
 export class UseBugNetService {
@@ -29,7 +29,6 @@ export class UseBugNetService {
 
     constructor(
         @InjectMongoose() private readonly connection: Connection,
-        private readonly coreService: CoreService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
@@ -106,6 +105,13 @@ export class UseBugNetService {
 
                 // Validate fruit is infested
                 if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.IsBuggy) {
+                    actionPayload = {
+                        action: ActionName.UseBugNet,
+                        placedItem: syncedPlacedItemAction,
+                        reasonCode: UseBugNetReasonCode.NotNeedBugNet,
+                        success: false,
+                        userId
+                    }
                     throw new WsException("Fruit is not infested")
                 }
 
