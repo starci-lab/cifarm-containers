@@ -23,9 +23,10 @@ import { Connection, Types } from "mongoose"
 import { ThiefFruitMessage } from "./thief-fruit.dto"
 import { UserLike } from "@src/jwt"
 import { createObjectId, DeepPartial, WithStatus } from "@src/common"
-import { EmitActionPayload, ActionName, ThiefFruitData, ThiefFruitReasonCode } from "../../../emitter"
+import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
+import { ThiefFruitData, ThiefFruitReasonCode } from "./types"
 
 @Injectable()
 export class ThiefFruitService {
@@ -123,13 +124,34 @@ export class ThiefFruitService {
 
                 // Validate fruit is ready to harvest
                 if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.FullyMatured) {
-                    throw new WsException("Fruit is not ready to harvest")
+                    actionPayload = {
+                        action: ActionName.ThiefFruit,
+                        placedItem: syncedPlacedItemAction,
+                        success: false,
+                        reasonCode: ThiefFruitReasonCode.NotFullyMatured,
+                        userId
+                    }
+                    throw new WsException("Fruit is not ready to thief")
                 }
 
                 // return error if you already thief fruit
                 if (placedItemFruit.fruitInfo.thieves.map((thief) => thief.toString()).includes(userId)) {
                     throw new WsException("You have already stolen this fruit")
-                }   
+                }  
+
+                if (
+                    placedItemFruit.fruitInfo.harvestQuantityRemaining 
+                    <= placedItemFruit.fruitInfo.harvestQuantityMin
+                ) {
+                    actionPayload = {
+                        action: ActionName.ThiefFruit,
+                        placedItem: syncedPlacedItemAction,
+                        success: false,
+                        reasonCode: ThiefFruitReasonCode.QuantityReactMinimum,
+                        userId
+                    }
+                    throw new WsException("Fruit is not enough to thief")
+                }  
 
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA

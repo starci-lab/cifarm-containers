@@ -21,10 +21,10 @@ import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import {
     EmitActionPayload,
     ActionName,
-    HarvestBeeHouseData
 } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
+import { HarvestBeeHouseData } from "./types"
 
 @Injectable()
 export class HarvestBeeHouseService {

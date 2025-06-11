@@ -25,9 +25,10 @@ import { Connection, Types } from "mongoose"
 import { ThiefPlantMessage } from "./thief-plant.dto"
 import { UserLike } from "@src/jwt"
 import { createObjectId, DeepPartial, WithStatus } from "@src/common"
-import { EmitActionPayload, ActionName, ThiefPlantData, ThiefPlantReasonCode } from "../../../emitter"
+import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
+import { ThiefPlantData, ThiefPlantReasonCode } from "./types"
 
 @Injectable()
 export class ThiefPlantService {
@@ -96,10 +97,24 @@ export class ThiefPlantService {
                 }
 
                 if (!placedItemTile.plantInfo) {
+                    actionPayload = {
+                        action: ActionName.ThiefPlant,
+                        placedItem: syncedPlacedItemAction,
+                        reasonCode: ThiefPlantReasonCode.NotPlanted,
+                        success: false,
+                        userId
+                    }
                     throw new WsException("Tile is not planted")
                 }
 
                 if (placedItemTile.plantInfo.currentState !== PlantCurrentState.FullyMatured) {
+                    actionPayload = {
+                        action: ActionName.ThiefPlant,
+                        placedItem: syncedPlacedItemAction,
+                        reasonCode: ThiefPlantReasonCode.NotFullyMatured,
+                        success: false,
+                        userId
+                    }
                     throw new WsException("Plant is not fully mature")
                 }
 
@@ -109,6 +124,19 @@ export class ThiefPlantService {
                         .includes(userId)
                 ) {
                     throw new WsException("You have already stolen this plant")
+                }
+
+                if (
+                    placedItemTile.plantInfo.harvestQuantityRemaining 
+                    <= placedItemTile.plantInfo.harvestQuantityMin) {
+                    actionPayload = {
+                        action: ActionName.ThiefPlant,
+                        placedItem: syncedPlacedItemAction,
+                        reasonCode: ThiefPlantReasonCode.QuantityReactMinimum,
+                        success: false,
+                        userId
+                    }
+                    throw new WsException("Plant has not enough quantity to steal")
                 }
 
                 // Add to synced placed items for action

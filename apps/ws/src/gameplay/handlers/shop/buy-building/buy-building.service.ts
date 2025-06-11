@@ -11,9 +11,10 @@ import { Connection } from "mongoose"
 import { BuyBuildingMessage } from "./buy-building.dto"
 import { UserLike } from "@src/jwt"
 import { DeepPartial, WithStatus } from "@src/common"
-import { EmitActionPayload, ActionName, BuyBuildingData } from "../../../emitter"
+import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { StopBuyingResponse } from "../../types"
+import { BuyBuildingData } from "./types"
 
 @Injectable()
 export class BuyBuildingService {

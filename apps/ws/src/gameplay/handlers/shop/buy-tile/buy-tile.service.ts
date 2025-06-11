@@ -5,9 +5,10 @@ import { Connection } from "mongoose"
 import { BuyTileMessage } from "./buy-tile.dto"
 import { UserLike } from "@src/jwt"
 import { DeepPartial, WithStatus } from "@src/common"
-import { EmitActionPayload, ActionName, BuyTileData } from "../../../emitter"
+import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { StopBuyingResponse } from "../../types"
+import { BuyTileData } from "./types"
 
 @Injectable()
 export class BuyTileService {

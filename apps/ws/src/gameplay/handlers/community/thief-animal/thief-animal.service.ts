@@ -23,9 +23,10 @@ import { Connection, Types } from "mongoose"
 import { ThiefAnimalMessage } from "./thief-animal.dto"
 import { UserLike } from "@src/jwt"
 import { createObjectId, DeepPartial, WithStatus } from "@src/common"
-import { EmitActionPayload, ActionName, ThiefAnimalData, ThiefAnimalReasonCode } from "../../../emitter"
+import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
+import { ThiefAnimalData, ThiefAnimalReasonCode } from "./types"
 
 @Injectable()
 export class ThiefAnimalService {
@@ -91,6 +92,21 @@ export class ThiefAnimalService {
                     throw new WsException("You have already stolen this animal")
                 }
 
+                // if the quantity is not enough to harvest
+                if (
+                    placedItemAnimal.animalInfo.harvestQuantityRemaining 
+                    <= placedItemAnimal.animalInfo.harvestQuantityMin
+                ) {
+                    actionPayload = {
+                        action: ActionName.ThiefAnimal,
+                        placedItem: syncedPlacedItemAction,
+                        success: false,
+                        reasonCode: ThiefAnimalReasonCode.QuantityReactMinimum,
+                        userId
+                    }
+                    throw new WsException("Animal is not enough to harvest")
+                }
+
                 // Add to synced placed items for action
                 syncedPlacedItemAction = {
                     id: placedItemAnimal.id,
@@ -128,6 +144,13 @@ export class ThiefAnimalService {
 
                 // Validate animal is yielding
                 if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Yield) {
+                    actionPayload = {
+                        action: ActionName.ThiefAnimal,
+                        placedItem: syncedPlacedItemAction,
+                        success: false,
+                        reasonCode: ThiefAnimalReasonCode.NotReadyToHarvest,
+                        userId
+                    }
                     throw new WsException("Animal is not ready to harvest")
                 }
 

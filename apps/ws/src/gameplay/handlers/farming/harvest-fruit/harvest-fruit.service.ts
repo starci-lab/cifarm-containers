@@ -22,9 +22,10 @@ import { Connection } from "mongoose"
 import { HarvestFruitMessage } from "./harvest-fruit.dto"
 import { UserLike } from "@src/jwt"
 import { createObjectId, DeepPartial, WithStatus } from "@src/common"
-import { EmitActionPayload, ActionName, HarvestFruitData } from "../../../emitter"
+import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
+import { HarvestFruitData } from "./types"
 
 @Injectable()
 export class HarvestFruitService {

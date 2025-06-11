@@ -21,11 +21,10 @@ import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import {
     EmitActionPayload,
     ActionName,
-    ThiefBeeHouseData,
-    ThiefBeeHouseReasonCode
 } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
+import { ThiefBeeHouseData, ThiefBeeHouseReasonCode } from "./types"
 
 @Injectable()
 export class ThiefBeeHouseService {
@@ -145,7 +144,33 @@ export class ThiefBeeHouseService {
                 }
                 // Check if the bee house is ready to harvest
                 if (placedItemBuilding.beeHouseInfo.currentState !== BeeHouseCurrentState.Yield) {
+                    actionPayload = {
+                        action: ActionName.ThiefBeeHouse,
+                        placedItem: syncedPlacedItemAction,
+                        success: false,
+                        reasonCode: ThiefBeeHouseReasonCode.NotReadyToHarvest,
+                        userId
+                    }
                     throw new WsException("Bee house is not ready to harvest")
+                }
+
+                // if you already thief bee house
+                if (placedItemBuilding.beeHouseInfo.thieves.map((thief) => thief.toString()).includes(userId)) {
+                    throw new WsException("You have already stolen this bee house")
+                }
+
+                // if the quantity is not enough to harvest
+                if (
+                    placedItemBuilding.beeHouseInfo.harvestQuantityRemaining 
+                    <= placedItemBuilding.beeHouseInfo.harvestQuantityMin) {
+                    actionPayload = {
+                        action: ActionName.ThiefBeeHouse,
+                        placedItem: syncedPlacedItemAction,
+                        success: false,
+                        reasonCode: ThiefBeeHouseReasonCode.QuantityReactMinimum,
+                        userId
+                    }
+                    throw new WsException("Bee house is not enough to harvest")
                 }
 
                 // Add to synced placed items
