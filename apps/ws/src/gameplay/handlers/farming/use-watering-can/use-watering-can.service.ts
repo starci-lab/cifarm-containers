@@ -17,8 +17,6 @@ import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
-import { WsThrottlerGuard } from "@src/throttler"
-import { UseGuards } from "@nestjs/common"
 
 @Injectable()
 export class UseWateringCanService {
@@ -33,7 +31,6 @@ export class UseWateringCanService {
     ) {}
 
     
-    @UseGuards(WsThrottlerGuard)
     async useWateringCan(
         { id: userId }: UserLike,
         { placedItemTileId }: UseWateringCanMessage

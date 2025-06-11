@@ -8,7 +8,7 @@ import {
     TokenBalanceData, 
     BlockchainCollectionData, 
     BlockchainNFTData 
-} from "./blockchain.dto"
+} from "./blockchain-rpc.dto"
 import { UserLike } from "@src/jwt"
 import { InjectMongoose, TokenKey, UserSchema } from "@src/databases"
 import { Connection } from "mongoose"
@@ -21,7 +21,7 @@ import { DeepPartial } from "@src/common"
 import { StaticService } from "@src/gameplay"
 
 @Injectable()
-export class BlockchainService {
+export class BlockchainRpcService {
     constructor(
         private readonly solanaService: SolanaService,
         @InjectMongoose()
@@ -31,8 +31,11 @@ export class BlockchainService {
         private readonly staticService: StaticService
     ) {}
 
+    // each deployment has a different version, so we can invalidate the cache
+    private version = 1
+
     private getCacheKey(chainKey: ChainKey, accountAddress: string, userId: string): string {
-        return getCacheKey(CacheKey.BlockchainBalances, `${userId}-${accountAddress}-${chainKey}`)
+        return getCacheKey(CacheKey.BlockchainBalances, `${userId}-${accountAddress}-${chainKey}-${this.version}`)
     }
 
     async blockchainBalances({
@@ -118,17 +121,19 @@ export class BlockchainService {
             })
         }
         }
+        if (!cached) {
         // we cache the balances
-        await this.cacheManager.set(
-            this.getCacheKey(chainKey, accountAddress, userId),
-            tokens,
-            envConfig().blockchainRpc.dataCacheTime * 1000
-        )
-        await this.cacheManager.set(
-            this.getCacheKey(chainKey, accountAddress, userId),
-            true,
-            envConfig().blockchainRpc.refreshInterval * 1000
-        )
+            await this.cacheManager.set(
+                this.getCacheKey(chainKey, accountAddress, userId),
+                tokens,
+                envConfig().blockchainRpc.dataCacheTime * 1000
+            )
+            await this.cacheManager.set(
+                this.getCacheKey(chainKey, accountAddress, userId),
+                true,
+                envConfig().blockchainRpc.refreshInterval * 1000
+            )
+        }
         // return the balances
         return {
             cached,
@@ -220,17 +225,19 @@ export class BlockchainService {
             })
         }
         }
+        if (!cached) {
         // we cache the balances
-        await this.cacheManager.set(
-            this.getCacheKey(chainKey, accountAddress, userId),
-            collections,
-            envConfig().blockchainRpc.dataCacheTime * 1000
-        )
-        await this.cacheManager.set(
-            this.getCacheKey(chainKey, accountAddress, userId),
-            true,
-            envConfig().blockchainRpc.refreshInterval * 1000
-        )
+            await this.cacheManager.set(
+                this.getCacheKey(chainKey, accountAddress, userId),
+                collections,
+                envConfig().blockchainRpc.dataCacheTime * 1000
+            )
+            await this.cacheManager.set(
+                this.getCacheKey(chainKey, accountAddress, userId),
+                true,
+                envConfig().blockchainRpc.refreshInterval * 1000
+            )
+        }
         // return the balances
         return {
             cached,

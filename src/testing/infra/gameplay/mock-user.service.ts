@@ -3,7 +3,6 @@ import { Injectable } from "@nestjs/common"
 import { DeepPartial } from "@src/common"
 import { InjectMongoose, SessionSchema, UserSchema } from "@src/databases"
 import { DateUtcService } from "@src/date"
-import { Network, ChainKey } from "@src/env"
 import { Connection } from "mongoose"
 import { v4 } from "uuid"
 
@@ -26,8 +25,7 @@ export class GameplayMockUserService {
     }
 
     public async generate({
-        golds = 500,
-        tokens = 100,
+        golds = 5000,
         level = 1,
         energy = 50,
         experiences = 0,
@@ -37,11 +35,7 @@ export class GameplayMockUserService {
     }: GenerateParams = {}): Promise<UserSchema> {
         const userPartial: DeepPartial<UserSchema> = {
             username: faker.internet.userName(),
-            chainKey: faker.helpers.arrayElement(Object.values(ChainKey)),
-            network: faker.helpers.arrayElement(Object.values(Network)),
-            accountAddress: faker.finance.ethereumAddress(),
             golds,
-            tokens,
             experiences,
             energy,
             level,

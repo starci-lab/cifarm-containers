@@ -218,23 +218,6 @@ export class UserSchema extends AbstractSchema {
     @Prop({ type: [MongooseSchema.Types.ObjectId], required: false })
         followeeUserIds: Array<Types.ObjectId>
 
-    @Field(() => Boolean)
-    @Prop({ type: Boolean, default: false })
-        tutorialStart: boolean
-
-    @Field(() => Boolean)
-    @Prop({ type: Boolean, default: false })
-        tutorialShop: boolean
-
-    @Field(() => Boolean)
-    @Prop({ type: Boolean, default: false })
-        tutorialInventory: boolean
-
-    // trigger when inventory has been closed
-    @Field(() => Boolean)
-    @Prop({ type: Boolean, default: false })
-        tutorialPlant: boolean
-
     @Field(() => TutorialSchema, {
         nullable: true
     })

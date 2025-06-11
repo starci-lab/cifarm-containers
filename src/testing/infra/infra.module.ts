@@ -12,6 +12,8 @@ import { KafkaModule } from "@src/brokers"
 import { DateModule } from "@src/date"
 import { E2EConnectionService, E2ESocketIoModule } from "./e2e"
 import { MongooseModule } from "@src/databases"
+import { HttpModule } from "@nestjs/axios"
+import { CryptoModule } from "@src/crypto"
 
 @Module({})
 export class TestingInfraModule extends ConfigurableModuleClass {
@@ -41,12 +43,19 @@ export class TestingInfraModule extends ConfigurableModuleClass {
                     isGlobal: true
                 }),
                 GameplayModule.register({
-                    isGlobal: true
+                    isGlobal: true,
+                    loadStatic: true
                 }),
                 KafkaModule.register({
                     isGlobal: true,
                 }),
+                HttpModule.register({
+                    global: true
+                }),
                 DateModule.register({
+                    isGlobal: true
+                }),
+                CryptoModule.register({
                     isGlobal: true
                 })
             )

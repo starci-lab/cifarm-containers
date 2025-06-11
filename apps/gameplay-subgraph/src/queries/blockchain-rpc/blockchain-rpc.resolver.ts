@@ -1,16 +1,16 @@
 import { Logger, UseGuards } from "@nestjs/common"
 import { Args, Query, Resolver } from "@nestjs/graphql"
-import { BlockchainService } from "./blockchain.service"
+import { BlockchainRpcService } from "./blockchain-rpc.service"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { GraphQLThrottlerGuard } from "@src/throttler"
-import { GetBlockchainBalancesRequest, GetBlockchainBalancesResponse, GetBlockchainCollectionsRequest, GetBlockchainCollectionsResponse } from "./blockchain.dto"
+import { GetBlockchainBalancesRequest, GetBlockchainBalancesResponse, GetBlockchainCollectionsRequest, GetBlockchainCollectionsResponse } from "./blockchain-rpc.dto"
 import { GraphQLUser } from "@src/decorators"
 
 @Resolver()
-export class BlockchainResolver {
-    private readonly logger = new Logger(BlockchainResolver.name)
+export class BlockchainRpcResolver {
+    private readonly logger = new Logger(BlockchainRpcResolver.name)
 
-    constructor(private readonly blockchainService: BlockchainService) { }
+    constructor(private readonly blockchainService: BlockchainRpcService) { }
 
     @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
     @Query(() => GetBlockchainBalancesResponse, {

@@ -14,6 +14,7 @@ import { CryptoModule } from "@src/crypto"
 import { EncryptModule } from "./encrypt"
 import { MongooseModule } from "@src/databases"
 import { GoogleCloudModule } from "@src/google-cloud"
+import { HttpModule } from "@nestjs/axios"
 @Module({
     imports: [
         EnvModule.forRoot(),
@@ -36,6 +37,9 @@ import { GoogleCloudModule } from "@src/google-cloud"
             docker: {
                 core: true
             }
+        }),
+        HttpModule.register({
+            global: true
         }),
         FarcasterCoreModule.register({
             isGlobal: true
