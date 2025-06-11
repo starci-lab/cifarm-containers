@@ -28,11 +28,8 @@ export class GraphQLGatewayModule extends ConfigurableModuleClass {
                         path: "/graphql",
                         formatError: (error) => {
                             // remove the stack trace
-                            delete error.extensions.stacktrace
-                            return {
-                                message: error.message, // Only show the error message
-                                extensions: error.extensions,
-                            }
+                            //delete error.extensions.stacktrace
+                            return error
                         }
                     },
                     gateway: {

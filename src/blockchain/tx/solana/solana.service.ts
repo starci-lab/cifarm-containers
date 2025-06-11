@@ -107,6 +107,7 @@ export class SolanaService {
     }
 
     public getVaultUmi(network: Network): Umi {
+        console.log(solanaHttpRpcUrl(ChainKey.Solana, network))
         const umi = createUmi(solanaHttpRpcUrl(ChainKey.Solana, network)).use(mplCore())
         const signer = umi.eddsa.createKeypairFromSecretKey(
             base58.decode(this.cipherService.decrypt(envConfig().chainCredentials[ChainKey.Solana].vault[network].privateKey)
@@ -370,24 +371,30 @@ export class SolanaService {
         accountAddress,
         native = false
     }: GetBalanceParams): Promise<GetBalanceResponse> {
-        const connection = new Connection(solanaHttpRpcUrl(ChainKey.Solana, network))
-        if (native) {
-            const balance = await connection.getBalance(new PublicKey(accountAddress))
+        try {
+            const connection = new Connection(solanaHttpRpcUrl(ChainKey.Solana, network))
+            if (native) {
+                const balance = await connection.getBalance(new PublicKey(accountAddress))
+                return {
+                    balance: computeDenomination(balance, 9)
+                }
+            }
+            if (!tokenAddress) {
+                throw new Error("Token address is required")
+            }
+            const token = await connection.getParsedTokenAccountsByOwner(
+                new PublicKey(accountAddress),
+                {
+                    mint: new PublicKey(tokenAddress)
+                }
+            )
             return {
-                balance: computeDenomination(balance, 9)
+                balance: token.value[0].account.data.parsed.info.tokenAmount.uiAmount
             }
-        }
-        if (!tokenAddress) {
-            throw new Error("Token address is required")
-        }
-        const token = await connection.getParsedTokenAccountsByOwner(
-            new PublicKey(accountAddress),
-            {
-                mint: new PublicKey(tokenAddress)
+        } catch {
+            return {
+                balance: 0
             }
-        )
-        return {
-            balance: token.value[0].account.data.parsed.info.tokenAmount.uiAmount
         }
     }
 
@@ -398,33 +405,40 @@ export class SolanaService {
         skip = 0,
         accountAddress
     }: GetCollectionParams): Promise<GetCollectionResponse> {
-        const umi = this.umis[network]
-        const  assets = await das.searchAssets(umi, {
-            grouping: ["collection", collectionAddress],
-            owner: publicKey(accountAddress),   
-            limit,
-            page: Math.floor(skip / limit) + 1,
-        })
-        const nfts: Array<NFT> = []
-        const promises: Array<Promise<void>> = []
-        // we fetch the nfts from the s3 service
-        for (const asset of assets) {
-            const promise = async () => {
-                const { data: { image } } = await lastValueFrom(this.httpService.get<MetaplexNFTMetadata>(asset.uri))
-                const nft: NFT = {
-                    nftAddress: asset.publicKey.toString(),
-                    name: asset.name,
-                    image: image,
-                    description: "",
-                    attributes: asset.attributes.attributeList
+        try {
+            const umi = this.umis[network]
+            const assets = await das.searchAssets(umi, {
+                grouping: ["collection", collectionAddress],
+                owner: publicKey(accountAddress),
+                limit,
+                page: Math.floor(skip / limit) + 1,
+            })
+            const nfts: Array<NFT> = []
+            const promises: Array<Promise<void>> = []
+            // we fetch the nfts from the s3 service
+            for (const asset of assets) {
+                const promise = async () => {
+                    const { data: { image } } = await lastValueFrom(this.httpService.get<MetaplexNFTMetadata>(asset.uri))
+                    const nft: NFT = {
+                        nftAddress: asset.publicKey.toString(),
+                        name: asset.name,
+                        image: image,
+                        description: "",
+                        attributes: asset.attributes.attributeList,
+                        wrapped: asset.permanentFreezeDelegate.frozen
+                    }
+                    nfts.push(nft)
                 }
-                nfts.push(nft)
+                promises.push(promise())
             }
-            promises.push(promise())
+            await Promise.all(promises)
+            return {
+                nfts
+            }
+        } catch {
+            return {
+                nfts: []
+            }
         }
-        await Promise.all(promises)
-        return {
-            nfts
-        }
-    }   
+    }
 }

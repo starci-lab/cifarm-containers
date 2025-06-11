@@ -1,4 +1,4 @@
-# docker build -t cifarm/gameplay-subgraph -f ./apps/gameplay-subgraph/Dockerfile . & docker push cifarm/gameplay-subgraph
+# docker buildx build -t cifarm/gameplay-subgraph -f ./apps/gameplay-subgraph/Dockerfile . & docker push cifarm/gameplay-subgraph
 # syntax=docker/dockerfile:1
 
 ARG NODE_VERSION=23.5.0
@@ -12,7 +12,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci 
+RUN npm ci --force
 
 # Copy remaining source code and build the application
 COPY . .
@@ -27,7 +27,7 @@ WORKDIR /usr/src/app
 COPY --from=build /usr/src/app/dist/apps/gameplay-subgraph .
 
 # Install only production dependencies
-RUN npm i  --production
+RUN npm i  --production --force
 
 # Run as non-root user
 USER node

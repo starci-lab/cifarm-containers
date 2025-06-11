@@ -190,6 +190,7 @@ export interface NFT {
     image: string
     description: string
     attributes: Array<Attribute>
+    wrapped: boolean
 }
 
 export interface GetCollectionResponse {

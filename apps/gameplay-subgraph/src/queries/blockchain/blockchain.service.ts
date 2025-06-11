@@ -1,11 +1,19 @@
 import { Injectable } from "@nestjs/common"
 import { SolanaService } from "@src/blockchain"
-import { GetBlockchainBalancesRequest, GetBlockchainBalancesResponse, GetBlockchainCollectionsResponse, GetBlockchainCollectionsRequest, TokenBalanceData, BlockchainCollectionData, BlockchainNFTData } from "./blockchain.dto"
+import { 
+    GetBlockchainBalancesRequest, 
+    GetBlockchainBalancesResponse, 
+    GetBlockchainCollectionsResponse, 
+    GetBlockchainCollectionsRequest, 
+    TokenBalanceData, 
+    BlockchainCollectionData, 
+    BlockchainNFTData 
+} from "./blockchain.dto"
 import { UserLike } from "@src/jwt"
 import { InjectMongoose, TokenKey, UserSchema } from "@src/databases"
 import { Connection } from "mongoose"
 import { GraphQLError } from "graphql"
-import { ChainKey, Network } from "@src/env"
+import { ChainKey } from "@src/env"
 import { CacheKey, getCacheKey, InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { envConfig } from "@src/env"
@@ -23,6 +31,10 @@ export class BlockchainService {
         private readonly staticService: StaticService
     ) {}
 
+    private getCacheKey(chainKey: ChainKey, accountAddress: string, userId: string): string {
+        return getCacheKey(CacheKey.BlockchainBalances, `${userId}-${accountAddress}-${chainKey}`)
+    }
+
     async blockchainBalances({
         chainKey,
         accountAddress,
@@ -36,11 +48,11 @@ export class BlockchainService {
         // if refresh is not passed, we try to get cached value
         if (refresh) {
             const isRefreshed = await this.cacheManager.get(
-                getCacheKey(CacheKey.BlockchainBalancesRefreshed, userId)
+                this.getCacheKey(chainKey, accountAddress, userId)
             )
             if (isRefreshed) {
                 const _cachedValue = await this.cacheManager.get<GetBlockchainBalancesResponse>(
-                    getCacheKey(CacheKey.BlockchainBalances, userId)
+                    this.getCacheKey(chainKey, accountAddress, userId)
                 )
                 if (_cachedValue) {
                     // if key is missing, we fetch the balances from the blockchain, 
@@ -50,7 +62,7 @@ export class BlockchainService {
             } 
         } else {
             const _cachedValue = await this.cacheManager.get<GetBlockchainBalancesResponse>(
-                getCacheKey(CacheKey.BlockchainBalances, userId)
+                this.getCacheKey(chainKey, accountAddress, userId)
             )
             if (_cachedValue) {
                 cachedValue = _cachedValue
@@ -60,7 +72,6 @@ export class BlockchainService {
         // we fetch the balances from the blockchain
         const tokens: Array<TokenBalanceData> = []
         const promises: Array<Promise<void>> = []
-        let _network: Network
         if (network === undefined) {
             const user = await this.connection.model<UserSchema>(UserSchema.name).findById(userId)
             if (!user) {
@@ -70,7 +81,7 @@ export class BlockchainService {
                     }
                 })
             }
-            _network = user.network
+            network = user.network
         }
         // we fetch the balances from the blockchain
         switch (chainKey) {
@@ -82,9 +93,9 @@ export class BlockchainService {
                         return
                     }
                     const native = (tokenKey === TokenKey.Native)
-                    const tokenAddress = (!native) ? this.staticService.tokens[tokenKey][chainKey][_network].tokenAddress : undefined
+                    const tokenAddress = (!native) ? this.staticService.tokens[tokenKey][chainKey][network].tokenAddress : undefined
                     const token = await this.solanaService.getBalance({
-                        network: _network,
+                        network,
                         accountAddress,
                         tokenAddress,
                         native
@@ -109,12 +120,12 @@ export class BlockchainService {
         }
         // we cache the balances
         await this.cacheManager.set(
-            getCacheKey(CacheKey.BlockchainBalances, userId),
+            this.getCacheKey(chainKey, accountAddress, userId),
             tokens,
             envConfig().blockchainRpc.dataCacheTime * 1000
         )
         await this.cacheManager.set(
-            getCacheKey(CacheKey.BlockchainBalancesRefreshed, userId),
+            this.getCacheKey(chainKey, accountAddress, userId),
             true,
             envConfig().blockchainRpc.refreshInterval * 1000
         )
@@ -136,11 +147,11 @@ export class BlockchainService {
         let cachedValue: DeepPartial<GetBlockchainCollectionsResponse> = {}
         if (refresh) {
             const isRefreshed = await this.cacheManager.get(
-                getCacheKey(CacheKey.BlockchainCollectionsRefreshed, userId)
+                this.getCacheKey(chainKey, accountAddress, userId)
             )
             if (isRefreshed) {
                 const _cachedValue = await this.cacheManager.get<GetBlockchainCollectionsResponse>(
-                    getCacheKey(CacheKey.BlockchainCollections, userId)
+                    this.getCacheKey(chainKey, accountAddress, userId)
                 )
                 if (_cachedValue) {
                     cachedValue = _cachedValue
@@ -149,7 +160,7 @@ export class BlockchainService {
             } 
         } else {
             const _cachedValue = await this.cacheManager.get<GetBlockchainCollectionsResponse>(
-                getCacheKey(CacheKey.BlockchainCollections, userId)
+                this.getCacheKey(chainKey, accountAddress, userId)
             )
             if (_cachedValue) {
                 cachedValue = _cachedValue
@@ -159,7 +170,6 @@ export class BlockchainService {
         // we fetch the balances from the blockchain
         const collections: Array<BlockchainCollectionData> = []
         const promises: Array<Promise<void>> = []
-        let _network: Network
         if (network === undefined) {
             const user = await this.connection.model<UserSchema>(UserSchema.name).findById(userId)
             if (!user) {
@@ -169,7 +179,7 @@ export class BlockchainService {
                     }
                 })
             }
-            _network = user.network
+            network = user.network
         }
         // we fetch the balances from the blockchain
         switch (chainKey) {
@@ -181,9 +191,9 @@ export class BlockchainService {
                         return
                     }
                     const { nfts } = await this.solanaService.getCollection({
-                        network: _network,
+                        network,
                         accountAddress,
-                        collectionAddress: this.staticService.nftCollections[nftType][_network].collectionAddress
+                        collectionAddress: this.staticService.nftCollections[nftType][network].collectionAddress
                     })
                     collections.push({
                         nftType,
@@ -193,6 +203,7 @@ export class BlockchainService {
                             imageUrl: nft.image,
                             description: nft.description,
                             traits: nft.attributes,
+                            wrapped: nft.wrapped
                         }))
                     })
                 }
@@ -211,12 +222,12 @@ export class BlockchainService {
         }
         // we cache the balances
         await this.cacheManager.set(
-            getCacheKey(CacheKey.BlockchainCollections, userId),
+            this.getCacheKey(chainKey, accountAddress, userId),
             collections,
             envConfig().blockchainRpc.dataCacheTime * 1000
         )
         await this.cacheManager.set(
-            getCacheKey(CacheKey.BlockchainCollectionsRefreshed, userId),
+            this.getCacheKey(chainKey, accountAddress, userId),
             true,
             envConfig().blockchainRpc.refreshInterval * 1000
         )

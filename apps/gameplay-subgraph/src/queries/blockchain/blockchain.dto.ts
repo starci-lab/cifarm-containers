@@ -140,6 +140,11 @@ export class BlockchainNFTData {
         description: "NFT description"
     })
         description: string
+
+    @Field(() => Boolean, {
+        description: "NFT wrapped address"
+    })
+        wrapped: boolean
 }
 
 // TODO: Add more blockchain types
