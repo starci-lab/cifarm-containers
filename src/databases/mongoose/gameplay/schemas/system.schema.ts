@@ -1237,7 +1237,23 @@ export class EnergyPurchases {
     })
     [Network.Mainnet]: EnergyPurchase
 }
+@ObjectType({ description: "Cache and refresh configuration for blockchain data" })
+export class BlockchainDataConfig {
+    @Field(() => Int, { description: "Time in seconds to cache data before refreshing" })
+        cacheDuration: number
 
+    @Field(() => Int, { description: "Interval in seconds between refresh attempts" })
+        refreshInterval: number
+}
+
+@ObjectType({ description: "Blockchain data config for balances and collections" })
+export class BlockchainDataConfigs {
+    @Field(() => BlockchainDataConfig, { description: "Config for balance data" })
+        balances: BlockchainDataConfig
+
+    @Field(() => BlockchainDataConfig, { description: "Config for collection data" })
+        collections: BlockchainDataConfig
+}
 
 // Generate the Mongoose schema class
 export const SystemSchemaClass = SchemaFactory.createForClass(SystemSchema)

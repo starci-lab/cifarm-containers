@@ -19,7 +19,8 @@ import {
     Referral,
     NFTConversion,
     EnergyPurchases,
-    LandLimitInfo
+    LandLimitInfo,
+    BlockchainDataConfigs
 } from "@src/databases"
 import { StaticService } from "@src/gameplay"                                           
 
@@ -110,5 +111,9 @@ export class SystemsService {
 
     landLimitInfo(): LandLimitInfo {
         return this.staticService.landLimitInfo
+    }
+
+    blockchainDataConfigs(): BlockchainDataConfigs {
+        return this.staticService.blockchainDataConfigs
     }
 }

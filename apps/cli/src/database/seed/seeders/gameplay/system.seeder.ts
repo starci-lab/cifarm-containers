@@ -31,7 +31,8 @@ import {
     NFTConversion,
     EnergyPurchases,
     LandLimitInfo,
-    NFTCollections
+    NFTCollections,
+    BlockchainDataConfigs
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import { AttributeName } from "@src/blockchain"
@@ -1116,6 +1117,17 @@ export class SystemSeeder implements Seeder {
             }
         }
 
+        const blockchainDataConfigs: BlockchainDataConfigs = {
+            balances: {
+                cacheDuration: 60 * 60 * 24, // 24 hours
+                refreshInterval: 60 * 3 // 3 minutes
+            },
+            collections: {
+                cacheDuration: 60 * 60 * 24, // 24 hours    
+                refreshInterval: 60 * 3 // 3 minutes
+            }
+        }
+
         const data: Array<Partial<SystemSchema>> = [
             {
                 _id: createObjectId(SystemId.Activities),
@@ -1221,6 +1233,11 @@ export class SystemSeeder implements Seeder {
                 _id: createObjectId(SystemId.LandLimitInfo),
                 displayId: SystemId.LandLimitInfo,
                 value: landLimitInfo
+            },
+            {
+                _id: createObjectId(SystemId.BlockchainDataConfigs),
+                displayId: SystemId.BlockchainDataConfigs,
+                value: blockchainDataConfigs
             }
         ]
         await this.connection.model<SystemSchema>(SystemSchema.name).insertMany(data)

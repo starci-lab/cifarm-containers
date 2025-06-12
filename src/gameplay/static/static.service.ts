@@ -39,7 +39,8 @@ import {
     NFTConversion,
     EnergyPurchases,
     SeasonSchema,
-    LandLimitInfo
+    LandLimitInfo,
+    BlockchainDataConfigs
 } from "@src/databases"
 import { Connection } from "mongoose"
 @Injectable()
@@ -81,6 +82,7 @@ export class StaticService implements OnModuleInit {
     public referral: Referral
     public nftConversion: NFTConversion
     public seasons: Array<SeasonSchema>
+    public blockchainDataConfigs: BlockchainDataConfigs     
     
     constructor(
         @InjectMongoose()
@@ -197,6 +199,12 @@ export class StaticService implements OnModuleInit {
             .model<SystemSchema>(SystemSchema.name)
             .findById<KeyValueRecord<NFTConversion>>(createObjectId(SystemId.NFTConversion))
         this.nftConversion = nftConversionDoc.value
+
+        const blockchainDataConfigsDoc = await this.connection
+            .model<SystemSchema>(SystemSchema.name)
+            .findById<KeyValueRecord<BlockchainDataConfigs>>(createObjectId(SystemId.BlockchainDataConfigs))
+        this.blockchainDataConfigs = blockchainDataConfigsDoc.value
+
         // Load collections
         this.placedItemTypes = await this.connection
             .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)

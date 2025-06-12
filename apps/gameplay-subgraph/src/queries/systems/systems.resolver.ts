@@ -20,7 +20,8 @@ import {
     Referral,
     NFTConversion,
     EnergyPurchases,
-    LandLimitInfo
+    LandLimitInfo,
+    BlockchainDataConfigs
 } from "@src/databases"
 import { SystemsService } from "./systems.service"
 import { GraphQLThrottlerGuard } from "@src/throttler"
@@ -217,4 +218,13 @@ export class SystemsResolver {
     landLimitInfo(): LandLimitInfo {
         return this.systemsService.landLimitInfo()
     }
+
+    @UseGuards(GraphQLThrottlerGuard)
+    @Query(() => BlockchainDataConfigs, {
+        name: "blockchainDataConfigs",
+        description: "Get the blockchain data configs"
+    })
+    blockchainDataConfigs(): BlockchainDataConfigs {
+        return this.systemsService.blockchainDataConfigs()
+    }   
 }

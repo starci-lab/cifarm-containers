@@ -563,6 +563,7 @@ export enum SystemId {
     Tokens = "tokens",
     Referral = "referral",
     NFTConversion = "nftConversion",
+    BlockchainDataConfigs = "blockchainDataConfigs",
 }
 
 export const GraphQLTypeSystemId = createEnumType(SystemId)
@@ -630,6 +631,9 @@ registerEnumType(GraphQLTypeSystemId, {
         },
         [SystemId.NFTConversion]: {
             description: "The NFT conversion id.",
+        },
+        [SystemId.BlockchainDataConfigs]: {
+            description: "The blockchain data configs id.",
         },
     },
 })

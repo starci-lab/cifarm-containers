@@ -1,13 +1,13 @@
 import { Injectable } from "@nestjs/common"
 import { SolanaService } from "@src/blockchain"
-import { 
-    GetBlockchainBalancesRequest, 
-    GetBlockchainBalancesResponse, 
-    GetBlockchainCollectionsResponse, 
-    GetBlockchainCollectionsRequest, 
-    TokenBalanceData, 
-    BlockchainCollectionData, 
-    BlockchainNFTData 
+import {
+    GetBlockchainBalancesRequest,
+    GetBlockchainBalancesResponse,
+    GetBlockchainCollectionsResponse,
+    GetBlockchainCollectionsRequest,
+    TokenBalanceData,
+    BlockchainCollectionData,
+    BlockchainNFTData
 } from "./blockchain-rpc.dto"
 import { UserLike } from "@src/jwt"
 import { InjectMongoose, TokenKey, UserSchema } from "@src/databases"
@@ -16,16 +16,15 @@ import { GraphQLError } from "graphql"
 import { ChainKey } from "@src/env"
 import { CacheKey, getCacheKey, InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
-import { envConfig } from "@src/env"
-import { DeepPartial } from "@src/common"
 import { StaticService } from "@src/gameplay"
 import { Sha256Service } from "@src/crypto"
 
-export interface GetCacheKeyParams {
+export interface GetCacheKeyParams<T> {
     chainKey: ChainKey,
     accountAddress: string,
     userId: string
     cacheKey: CacheKey
+    params: T
 }
 @Injectable()
 export class BlockchainRpcService {
@@ -37,16 +36,16 @@ export class BlockchainRpcService {
         private readonly cacheManager: Cache,
         private readonly sha256Service: Sha256Service,
         private readonly staticService: StaticService
-    ) {}
+    ) { }
 
     // each deployment has a different version, so we can invalidate the cache
     private version = 1
 
     // hash the cache key to prevent abuse
-    private getCacheKey({ cacheKey, chainKey, accountAddress, userId }: GetCacheKeyParams): string {
-        return this.sha256Service.hash(getCacheKey(cacheKey, `${userId}-${accountAddress}-${chainKey}-${this.version}`))
+    private getCacheKey<T>({ cacheKey, chainKey, accountAddress, userId, params }: GetCacheKeyParams<T>): string {
+        return this.sha256Service.hash(getCacheKey(cacheKey, `${userId}-${accountAddress}-${chainKey}-${this.version}-${JSON.stringify(params)}`))
     }
-    
+
     async blockchainBalances({
         chainKey,
         accountAddress,
@@ -56,42 +55,39 @@ export class BlockchainRpcService {
     { network, id: userId }: UserLike): Promise<GetBlockchainBalancesResponse> {
         let cached = false
         // if refresh is not passed, we try to get cached value
-        let cachedValue: DeepPartial<GetBlockchainBalancesResponse> = {}
+        let tokens: Array<TokenBalanceData> = []
         let ttl = 0
         // if refresh is not passed, we try to get cached value
         if (refresh) {
             const isRefreshed = await this.cacheManager.get(
-                this.getCacheKey({ cacheKey: CacheKey.BlockchainBalancesRefreshed, chainKey, accountAddress, userId })
+                this.getCacheKey({ cacheKey: CacheKey.BlockchainBalancesRefreshed, chainKey, accountAddress, userId, params: { tokenKeys } })
             )
             if (isRefreshed) {
-                const _cachedValue = await this.cacheManager.get<GetBlockchainBalancesResponse>(
-                    this.getCacheKey({ cacheKey: CacheKey.BlockchainBalances, chainKey, accountAddress, userId })
+                const _cachedValue = await this.cacheManager.get<Array<TokenBalanceData>>(
+                    this.getCacheKey({ cacheKey: CacheKey.BlockchainBalances, chainKey, accountAddress, userId, params: { tokenKeys } })
                 )
                 ttl = await this.cacheManager.ttl(
-                    this.getCacheKey({ cacheKey: CacheKey.BlockchainBalancesRefreshed, chainKey, accountAddress, userId })
+                    this.getCacheKey({ cacheKey: CacheKey.BlockchainBalancesRefreshed, chainKey, accountAddress, userId, params: { tokenKeys } })
                 )
-                console.log("ttl", ttl)
                 if (_cachedValue) {
                     // if key is missing, we fetch the balances from the blockchain, 
-                    cachedValue = _cachedValue
+                    tokens = _cachedValue
                     cached = true
                 }
-            } 
+            }
         } else {
-            const _cachedValue = await this.cacheManager.get<GetBlockchainBalancesResponse>(
-                this.getCacheKey({ cacheKey: CacheKey.BlockchainBalances, chainKey, accountAddress, userId })
+            const _cachedValue = await this.cacheManager.get<Array<TokenBalanceData>>(
+                this.getCacheKey({ cacheKey: CacheKey.BlockchainBalances, chainKey, accountAddress, userId, params: { tokenKeys } })
             )
             ttl = await this.cacheManager.ttl(
-                this.getCacheKey({ cacheKey: CacheKey.BlockchainBalancesRefreshed, chainKey, accountAddress, userId })
+                this.getCacheKey({ cacheKey: CacheKey.BlockchainBalancesRefreshed, chainKey, accountAddress, userId, params: { tokenKeys } })
             )
-            console.log("ttl", ttl)
             if (_cachedValue) {
-                cachedValue = _cachedValue
+                tokens = _cachedValue
                 cached = true
             }
         }
         // we fetch the balances from the blockchain
-        const tokens: Array<TokenBalanceData> = []
         const promises: Array<Promise<void>> = []
         if (network === undefined) {
             const user = await this.connection.model<UserSchema>(UserSchema.name).findById(userId)
@@ -110,7 +106,7 @@ export class BlockchainRpcService {
             for (const tokenKey of tokenKeys) {
                 const promise = async () => {
                     // if the balance is cached, we use the cached value
-                    if (cachedValue[tokenKey]) {
+                    if (tokens.find((token) => token.tokenKey === tokenKey)) {
                         return
                     }
                     const native = (tokenKey === TokenKey.Native)
@@ -140,16 +136,16 @@ export class BlockchainRpcService {
         }
         }
         if (!cached) {
-        // we cache the balances
+            // we cache the balances
             await this.cacheManager.set(
-                this.getCacheKey({ cacheKey: CacheKey.BlockchainBalances, chainKey, accountAddress, userId }),
+                this.getCacheKey({ cacheKey: CacheKey.BlockchainBalances, chainKey, accountAddress, userId, params: { tokenKeys } }),
                 tokens,
-                envConfig().blockchainRpc.dataCacheTime * 1000
+                this.staticService.blockchainDataConfigs.balances.cacheDuration * 1000
             )
             await this.cacheManager.set(
-                this.getCacheKey({ cacheKey: CacheKey.BlockchainBalancesRefreshed, chainKey, accountAddress, userId }),
+                this.getCacheKey({ cacheKey: CacheKey.BlockchainBalancesRefreshed, chainKey, accountAddress, userId, params: { tokenKeys } }),
                 true,
-                envConfig().blockchainRpc.refreshInterval * 1000
+                this.staticService.blockchainDataConfigs.balances.refreshInterval * 1000
             )
         }
         // return the balances
@@ -168,42 +164,41 @@ export class BlockchainRpcService {
         accountAddress,
         chainKey,
         nftCollectionKeys,
-        refresh 
+        refresh
     }: GetBlockchainCollectionsRequest,
     { network, id: userId }: UserLike): Promise<GetBlockchainCollectionsResponse> {
         let cached = false
-        let cachedValue: DeepPartial<GetBlockchainCollectionsResponse> = {}
+        let collections: Array<BlockchainCollectionData> = []
         let ttl = 0
         if (refresh) {
             const isRefreshed = await this.cacheManager.get(
-                this.getCacheKey({ cacheKey: CacheKey.BlockchainCollectionsRefreshed, chainKey, accountAddress, userId })
+                this.getCacheKey({ cacheKey: CacheKey.BlockchainCollectionsRefreshed, chainKey, accountAddress, userId, params: { nftCollectionKeys } })
             )
             if (isRefreshed) {
-                const _cachedValue = await this.cacheManager.get<GetBlockchainCollectionsResponse>(
-                    this.getCacheKey({ cacheKey: CacheKey.BlockchainCollections, chainKey, accountAddress, userId })
+                const _cachedValue = await this.cacheManager.get<Array<BlockchainCollectionData>>(
+                    this.getCacheKey({ cacheKey: CacheKey.BlockchainCollections, chainKey, accountAddress, userId, params: { nftCollectionKeys } })
                 )
                 ttl = await this.cacheManager.ttl(
-                    this.getCacheKey({ cacheKey: CacheKey.BlockchainCollectionsRefreshed, chainKey, accountAddress, userId })
+                    this.getCacheKey({ cacheKey: CacheKey.BlockchainCollectionsRefreshed, chainKey, accountAddress, userId, params: { nftCollectionKeys } })
                 )
                 if (_cachedValue) {
-                    cachedValue = _cachedValue
+                    collections = _cachedValue
                     cached = true
                 }
-            } 
+            }
         } else {
-            const _cachedValue = await this.cacheManager.get<GetBlockchainCollectionsResponse>(
-                this.getCacheKey({ cacheKey: CacheKey.BlockchainCollections, chainKey, accountAddress, userId })
+            const _cachedValue = await this.cacheManager.get<Array<BlockchainCollectionData>>(
+                this.getCacheKey({ cacheKey: CacheKey.BlockchainCollections, chainKey, accountAddress, userId, params: { nftCollectionKeys } })
             )
             ttl = await this.cacheManager.ttl(
-                this.getCacheKey({ cacheKey: CacheKey.BlockchainCollectionsRefreshed, chainKey, accountAddress, userId })
+                this.getCacheKey({ cacheKey: CacheKey.BlockchainCollectionsRefreshed, chainKey, accountAddress, userId, params: { nftCollectionKeys } })
             )
             if (_cachedValue) {
-                cachedValue = _cachedValue
+                collections = _cachedValue
                 cached = true
             }
         }
         // we fetch the balances from the blockchain
-        const collections: Array<BlockchainCollectionData> = []
         const promises: Array<Promise<void>> = []
         if (network === undefined) {
             const user = await this.connection.model<UserSchema>(UserSchema.name).findById(userId)
@@ -222,7 +217,7 @@ export class BlockchainRpcService {
             for (const nftCollectionKey of nftCollectionKeys) {
                 const promise = async () => {
                     // if the balance is cached, we use the cached value
-                    if (cachedValue[nftCollectionKey]) {
+                    if (collections.find((collection) => collection.nftCollectionKey === nftCollectionKey)) {
                         return
                     }
                     const { nfts } = await this.solanaService.getCollection({
@@ -256,16 +251,16 @@ export class BlockchainRpcService {
         }
         }
         if (!cached) {
-        // we cache the balances
+            // we cache the balances
             await this.cacheManager.set(
-                this.getCacheKey({ cacheKey: CacheKey.BlockchainCollections, chainKey, accountAddress, userId }),
+                this.getCacheKey({ cacheKey: CacheKey.BlockchainCollections, chainKey, accountAddress, userId, params: { nftCollectionKeys } }),
                 collections,
-                envConfig().blockchainRpc.dataCacheTime * 1000
+                this.staticService.blockchainDataConfigs.collections.cacheDuration * 1000
             )
             await this.cacheManager.set(
-                this.getCacheKey({ cacheKey: CacheKey.BlockchainCollectionsRefreshed, chainKey, accountAddress, userId }),
+                this.getCacheKey({ cacheKey: CacheKey.BlockchainCollectionsRefreshed, chainKey, accountAddress, userId, params: { nftCollectionKeys } }),
                 true,
-                envConfig().blockchainRpc.refreshInterval * 1000
+                this.staticService.blockchainDataConfigs.collections.refreshInterval * 1000
             )
         }
         // return the balances
