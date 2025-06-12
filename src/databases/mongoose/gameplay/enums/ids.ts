@@ -1004,6 +1004,8 @@ export enum PlacedItemTypeId {
     OakTree = "oakTree",
     PineTree = "pineTree",
     MapleTree = "mapleTree",
+    //decoration
+    WoodenFence = "woodenFence",
 }
 
 export const GraphQLTypePlacedItemTypeId = createEnumType(PlacedItemTypeId)
@@ -1069,6 +1071,9 @@ registerEnumType(GraphQLTypePlacedItemTypeId, {
         [PlacedItemTypeId.MapleTree]: {
             description: "The maple tree id.",
         },
+        [PlacedItemTypeId.WoodenFence]: {
+            description: "The wooden fence id.",
+        },
     },
 })
 
@@ -1120,6 +1125,22 @@ registerEnumType(GraphQLTypeTerrainId, {
         },
         [TerrainId.MapleTree]: {
             description: "The maple tree id.",
+        },
+    },
+})
+
+export enum DecorationId {
+    WoodenFence = "woodenFence",
+}
+
+export const GraphQLTypeDecorationId = createEnumType(DecorationId)
+
+registerEnumType(GraphQLTypeDecorationId, {
+    name: "DecorationId",
+    description: "The decoration id.",
+    valuesMap: {
+        [DecorationId.WoodenFence]: {
+            description: "The wooden fence id.",
         },
     },
 })

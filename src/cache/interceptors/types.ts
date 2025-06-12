@@ -1,0 +1,1 @@
+export const GRAPHQL_CACHE_TTL = "graphql-cache-ttl"

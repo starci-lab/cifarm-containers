@@ -40,7 +40,8 @@ import {
     EnergyPurchases,
     SeasonSchema,
     LandLimitInfo,
-    BlockchainDataConfigs
+    BlockchainDataConfigs,
+    DecorationSchema
 } from "@src/databases"
 import { Connection } from "mongoose"
 @Injectable()
@@ -83,6 +84,7 @@ export class StaticService implements OnModuleInit {
     public nftConversion: NFTConversion
     public seasons: Array<SeasonSchema>
     public blockchainDataConfigs: BlockchainDataConfigs     
+    public decorations: Array<DecorationSchema>
     
     constructor(
         @InjectMongoose()
@@ -238,6 +240,8 @@ export class StaticService implements OnModuleInit {
 
         this.seasons = await this.connection.model<SeasonSchema>(SeasonSchema.name).find()
 
+        this.decorations = await this.connection.model<DecorationSchema>(DecorationSchema.name).find()
+
         this.logger.verbose("All static data loaded")
         this.logger.verbose(`Animals: ${this.animals.length}`)
         this.logger.verbose(`Crops: ${this.crops.length}`)
@@ -250,5 +254,6 @@ export class StaticService implements OnModuleInit {
         this.logger.verbose(`Flowers: ${this.flowers.length}`)
         this.logger.verbose(`Terrains: ${this.terrains.length}`)
         this.logger.verbose(`Seasons: ${this.seasons.length}`)
+        this.logger.verbose(`Decorations: ${this.decorations.length}`)
     }
 }

@@ -92,7 +92,8 @@ export enum PlacedItemType {
     Animal = "animal",
     Fruit = "fruit",
     Pet = "pet",
-    Terrain = "terrain"
+    Terrain = "terrain",
+    Decoration = "decoration"
 }
 
 export const GraphQLTypePlacedItemType = createEnumType(PlacedItemType)
@@ -118,6 +119,9 @@ registerEnumType(GraphQLTypePlacedItemType, {
         },
         [PlacedItemType.Terrain]: {
             description: "The terrain placed item"
+        },
+        [PlacedItemType.Decoration]: {
+            description: "The decoration placed item"
         }
     }
 })
@@ -425,6 +429,22 @@ registerEnumType(GraphQLTypeTerrainType, {
         },
         [TerrainType.MapleTree]: {
             description: "The maple tree terrain"
+        }
+    }
+})
+
+export enum DecorationType {
+    Fence = "fence"
+}
+
+export const GraphQLTypeDecorationType = createEnumType(DecorationType)
+
+registerEnumType(GraphQLTypeDecorationType, {
+    name: "DecorationType",
+    description: "The type of decoration",
+    valuesMap: {
+        [DecorationType.Fence]: {
+            description: "The fence decoration"
         }
     }
 })

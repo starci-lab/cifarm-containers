@@ -70,10 +70,8 @@ export class BuyFruitService {
                 const { fruitLimit } = this.staticService.landLimitInfo.landLimits.find(
                     (limit) => limit.index === user.landLimitIndex
                 )
-
                 // save user snapshot
                 const userSnapshot = user.$clone()
-
                 // Check sufficient gold
                 this.goldBalanceService.checkSufficient({
                     current: user.golds,
@@ -87,7 +85,6 @@ export class BuyFruitService {
                 const placedItemTypes = this.staticService.placedItemTypes.filter(
                     (placedItemType) => placedItemType.type === PlacedItemType.Fruit
                 )
-
                 const count = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .countDocuments({

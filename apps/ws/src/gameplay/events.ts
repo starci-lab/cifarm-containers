@@ -30,6 +30,7 @@ export enum ReceiverEventName {
     BuySupplies = "buy_supplies",
     BuyTool = "buy_tool",
     BuyFruit = "buy_fruit",
+    BuyDecoration = "buy_decoration",
     BuyAnimal = "buy_animal",
     BuyBuilding = "buy_building",
     BuyTile = "buy_tile",

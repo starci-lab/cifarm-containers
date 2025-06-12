@@ -26,6 +26,11 @@ export class DateUtcService {
         return dayjs().utcOffset(timeZoneOffset).add(1, "day").startOf("day")
     }
 
+    // get today midnight utc
+    public getTodayMidnightUtc(): Dayjs {
+        return dayjs().utc().startOf("day")
+    }
+
     public getNextCronRunUtc(minuteMarks: Array<number> = [0, 15, 30, 45], hourMarks?: Array<number>): Dayjs {
         const now = this.getDayjs()
     

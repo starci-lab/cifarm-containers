@@ -8,7 +8,8 @@ import {
     InjectMongoose,
     FruitId,
     PetId,
-    TerrainId
+    TerrainId,
+    DecorationId
 } from "@src/databases"
 import { Injectable, Logger } from "@nestjs/common"
 import { Seeder } from "nestjs-seeder"
@@ -207,6 +208,14 @@ export class PlacedItemTypeSeeder implements Seeder {
                 sizeX: 2,
                 sizeY: 2
             },
+            {
+                _id: createObjectId(PlacedItemTypeId.WoodenFence),
+                displayId: PlacedItemTypeId.WoodenFence,
+                type: PlacedItemType.Decoration,
+                decoration: createObjectId(DecorationId.WoodenFence),
+                sizeX: 1,
+                sizeY: 1,
+            }
         ]
 
         await this.connection

@@ -4,9 +4,11 @@ import { Connection } from "mongoose"
 import {
     FolloweesRequest,
     FolloweesResponse,
+    GetLeaderboardRequest,
+    GetLeaderboardResponse,
     NeighborsRequest,
     NeighborsResponse,
-    NeighborsSearchStatus
+    NeighborsSearchStatus,
 } from "./users.dto"
 import { UserLike } from "@src/jwt"
 import { StaticService } from "@src/gameplay"
@@ -16,6 +18,10 @@ import { QueryDslQueryContainer, SortCombinations } from "@elastic/elasticsearch
 import { GraphQLError } from "graphql"
 import { DeepPartial } from "@src/common"
 import _ from "lodash"
+import { Cache } from "cache-manager"
+import { DateUtcService } from "@src/date"
+import { Network } from "@src/env"
+import { InjectCache } from "@src/cache"
 
 @Injectable()
 export class UsersService {
@@ -25,7 +31,10 @@ export class UsersService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly staticService: StaticService,
-        private readonly elasticsearchService: ElasticsearchService
+        private readonly elasticsearchService: ElasticsearchService,
+        @InjectCache()
+        private readonly cacheManager: Cache,
+        private readonly dateUtcService: DateUtcService
     ) { }
 
     async user(id: string): Promise<UserSchema> {
@@ -351,6 +360,63 @@ export class UsersService {
             throw error
         }
     }
+
+    private async getLeaderboard(network: Network, limit: number): Promise<Array<UserSchema>> {
+        try {
+            const result = await this.elasticsearchService.search<UserSchema>({
+                index: createIndexName(UserSchema.name),
+                query: {
+                    match: {
+                        network
+                    }
+                },
+                size: limit,
+                sort: {
+                    level: {
+                        order: "desc"
+                    },
+                    experiences: {
+                        order: "desc"
+                    }
+                }
+            })
+            return result.hits.hits.map((hit) => hit._source)
+        } catch (error) {
+            this.logger.error(error)
+            throw error
+        }
+    }
+
+    // leaderboard will track the top 10 users by exp and level, and will be updated every day at midnight
+    async leaderboard(
+        { limit, network }: GetLeaderboardRequest
+    ): Promise<GetLeaderboardResponse> {
+        try {
+            // const cacheKey = `leaderboard:${network}:${limit}`
+            // let users: Array<UserSchema> = []
+            // const cached = await this.cacheManager.get<Array<UserSchema>>(cacheKey)
+            // if (cached) {
+            //     const ttl = await this.cacheManager.ttl(cacheKey)
+            //     // if ttl is less than today midnight, refresh the cache
+            //     if (ttl < this.dateUtcService.getTodayMidnightUtc().unix()) {
+            //         // query top leadings users, in elasticsearch
+            //         users = await this.getLeaderboard(network, limit)
+            //         // set cache with ttl 1 day
+            //         //await this.cacheManager.set(cacheKey, users, 60 * 60 * 24)
+            //     } else {
+            //         users = await this.cacheManager.get<Array<UserSchema>>(cacheKey)
+            //         await this.cacheManager.set(cacheKey, users, 60 * 60 * 24)
+            //     }
+            // }
+            const users = await this.getLeaderboard(network, limit)
+            return {
+                data: users,
+            }
+        } catch (error) {
+            this.logger.error(error)
+            throw error
+        }
+    }   
 }
 
 export interface GetLevelFilterParams {

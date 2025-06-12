@@ -8,7 +8,8 @@ import {
     PlacedItemType,
     PlacedItemTypeId,
     BuildingKind,
-    UserSchema
+    UserSchema,
+    DecorationSchema
 } from "@src/databases"
 import { StaticService } from "../static"
 import { ClientSession, Connection } from "mongoose"
@@ -35,6 +36,10 @@ export interface GetAnimalLimitParams extends GetLimitParams {
 
 export interface GetPetLimitParams extends GetLimitParams {
     pet: PetSchema
+}
+
+export interface GetDecorationLimitParams extends GetLimitParams {
+    decoration: DecorationSchema
 }
 
 @Injectable()
@@ -279,6 +284,32 @@ export class LimitService {
             console.error("Error in getPetLimit:", error)
             throw error
         }
+    }
+
+    public async getDecorationLimit({ 
+        decoration, 
+        //user, session
+    }: GetDecorationLimitParams): Promise<LimitResult> {
+        if (decoration.limited) {
+            return {
+                selectedPlacedItemCountNotExceedLimit: false
+            }
+        }
+        // const placedItemTypeDecorations = this.staticSerivce.placedItemTypes.filter(
+        //     (placedItemType) => placedItemType.type === PlacedItemType.Decoration
+        // )
+        // const placedItemCount = await this.connection
+        //     .model<PlacedItemSchema>(PlacedItemSchema.name)
+        //     .countDocuments({
+        //         user: user.id,
+        //         placedItemType: {
+        //             $in: placedItemTypeDecorations.map((placedItemType) => placedItemType.id)
+        //         }
+        //     })
+        //     .session(session)
+        // return {
+        //     selectedPlacedItemCountNotExceedLimit: placedItemCount < 1
+        // }
     }
 }
 

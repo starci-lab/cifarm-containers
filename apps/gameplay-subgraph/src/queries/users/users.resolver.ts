@@ -7,6 +7,8 @@ import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import {
     FolloweesRequest,
     FolloweesResponse,
+    GetLeaderboardRequest,
+    GetLeaderboardResponse,
     NeighborsRequest,
     NeighborsResponse
 } from "./users.dto"
@@ -46,7 +48,6 @@ export class UsersResolver {
         return this.usersService.neighbors(user, request)
     }
 
-    
     @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
     @Query(() => FolloweesResponse, {
         name: "followees",
@@ -58,5 +59,17 @@ export class UsersResolver {
             request: FolloweesRequest
     ): Promise<FolloweesResponse> {
         return this.usersService.followees(user, request)
+    }
+
+    @UseGuards(GraphQLThrottlerGuard)
+    @Query(() => GetLeaderboardResponse, {
+        name: "leaderboard",
+        description: "Get the leaderboard"
+    })
+    async leaderboard(
+        @Args("request", { type: () => GetLeaderboardRequest })
+            request: GetLeaderboardRequest
+    ): Promise<GetLeaderboardResponse> {
+        return this.usersService.leaderboard(request)
     }
 }

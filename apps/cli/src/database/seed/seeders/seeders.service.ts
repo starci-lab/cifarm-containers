@@ -18,7 +18,8 @@ import {
     FlowerSeeder,
     FishSeeder,
     SeasonSeeder,
-    TerrainSeeder
+    TerrainSeeder,
+    DecorationSeeder
 } from "./gameplay"
 import { MODULE_OPTIONS_TOKEN } from "./seeders.module-definition"
 import { SeederOptions } from "./types"
@@ -41,6 +42,7 @@ export class SeedersService {
             InventoryTypeSeeder,
             ToolSeeder,
             TileSeeder,
+            DecorationSeeder,
             FlowerSeeder,
             SupplySeeder,
             PlacedItemTypeSeeder,

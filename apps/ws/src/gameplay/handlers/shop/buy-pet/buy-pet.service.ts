@@ -86,14 +86,14 @@ export class BuyPetService {
                 }
 
                 // Find the placed item type for the building
-                const placedItemBuildingType = this.staticService.placedItemTypes.find(
+                const placedItemTypeBuilding = this.staticService.placedItemTypes.find(
                     (placedItemType) =>
                         placedItemType.type === PlacedItemType.Building &&
                         placedItemType.building &&
                         placedItemType.building.toString() === building.id.toString()
                 )
 
-                if (!placedItemBuildingType) {
+                if (!placedItemTypeBuilding) {
                     throw new WsException("Building placed item type not found")
                 }
 
@@ -149,7 +149,7 @@ export class BuyPetService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .find({
                         user: userId,
-                        placedItemType: placedItemBuildingType.id
+                        placedItemType: placedItemTypeBuilding.id
                     })
                     .session(session)
 
@@ -228,9 +228,8 @@ export class BuyPetService {
                     user,
                     session
                 })
-                console.log("limitData", limitData)
 
-                stopBuying = !limitData.selectedPlacedItemCountNotExceedLimit     || user.golds < pet.price
+                stopBuying = !limitData.selectedPlacedItemCountNotExceedLimit || user.golds < pet.price
 
                 return {
                     user: syncedUser,

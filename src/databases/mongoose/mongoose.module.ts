@@ -24,6 +24,8 @@ import {
     PlacedItemSchemaClass,
     SessionSchema,
     SessionSchemaClass,
+    DecorationSchema,
+    DecorationSchemaClass,
     PlantInfoSchema,
     PlantInfoSchemaClass,
     TileInfoSchema, 
@@ -207,6 +209,10 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: BeeHouseInfoSchema.name,
                             useFactory: () => BeeHouseInfoSchemaClass
+                        },
+                        {
+                            name: DecorationSchema.name,
+                            useFactory: () => DecorationSchemaClass
                         },
                         {
                             name: SessionSchema.name,

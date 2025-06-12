@@ -123,6 +123,7 @@ export enum ActionName {
     UpgradeBuilding = "upgrade_building",
     HarvestBeeHouse = "harvest_bee_house",
     ThiefBeeHouse = "thief_bee_house",
-    BuyPet = "buy_pet"
+    BuyPet = "buy_pet",
+    BuyDecoration = "buy_decoration"
 }
 
