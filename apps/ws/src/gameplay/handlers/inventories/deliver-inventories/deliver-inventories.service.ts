@@ -69,7 +69,7 @@ export class DeliverInventoriesService {
                     )
                     const { inventories, occupiedIndexes } =
                         await this.inventoryService.getAddParams({
-                            connection: this.connection,
+                            // connection: this.connection,
                             inventoryType: inventoryType,
                             userId,
                             session,

@@ -60,8 +60,8 @@ export class MoveService {
                  * CHECK IF POSITION IS AVAILABLE
                  ************************************************************/
                 const occupiedPositions = await this.positionService.getOccupiedPositions({
-                    connection: this.connection,
                     userId,
+                    session,
                     itself: placedItem
                 })
                 this.positionService.checkPositionAvailable({

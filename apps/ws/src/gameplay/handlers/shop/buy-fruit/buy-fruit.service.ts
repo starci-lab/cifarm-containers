@@ -134,7 +134,7 @@ export class BuyFruitService {
                  * CHECK IF POSITION IS AVAILABLE
                  ************************************************************/
                 const occupiedPositions = await this.positionService.getOccupiedPositions({
-                    connection: this.connection,
+                    session,
                     userId
                 })
                 this.positionService.checkPositionAvailable({

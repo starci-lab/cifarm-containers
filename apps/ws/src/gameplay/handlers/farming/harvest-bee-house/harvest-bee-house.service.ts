@@ -194,7 +194,6 @@ export class HarvestBeeHouseService {
                 }
                 // use inventory service to create inventory
                 const { inventories, occupiedIndexes } = await this.inventoryService.getAddParams({
-                    connection: this.connection,
                     userId,
                     session,
                     inventoryType: inventoryTypeProduct,

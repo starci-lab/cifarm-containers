@@ -1,2 +1,2 @@
 export * from "./ship.service"
-export * from "./ship.types"
+export * from "./types"

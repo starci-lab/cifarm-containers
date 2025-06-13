@@ -17,7 +17,14 @@ export class UserSchema extends AbstractSchema {
     @Field(() => String, {
         description: "The username of the user"
     })
-    @Prop({ type: String, required: true, length: 100 })
+    @Prop({ 
+        type: String,
+        required: true,
+        length: 20,
+        //no unique because we run multiple network here
+        //unique: true,
+        index: true
+    })
         username: string
 
     @Field(() => GraphQLTypeNetwork, {

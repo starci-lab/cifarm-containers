@@ -123,7 +123,7 @@ export class BuyPetService {
                  * CHECK POSITION AVAILABILITY
                  ************************************************************/
                 const occupiedPositions = await this.positionService.getOccupiedPositions({
-                    connection: this.connection,
+                    session,
                     userId
                 })
                 this.positionService.checkPositionAvailable({

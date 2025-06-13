@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import { SetupService } from "../../setup"
 import { UserSchema, InjectMongoose, OauthProviderName } from "@src/databases"
 import { Connection } from "mongoose"
-import { EnergyService, StaticService } from "@src/gameplay"
+import { EnergyService, StaticService, UsernameService } from "@src/gameplay"
 import { envConfig } from "@src/env"
 import { UserXLike } from "@src/x-api"
 
@@ -13,6 +13,7 @@ export class XService {
         private readonly setupService: SetupService,
         @InjectMongoose()
         private readonly connection: Connection,
+        private readonly usernameService: UsernameService,
         private readonly energyService: EnergyService,
         private readonly staticService: StaticService
     ) {}
@@ -42,7 +43,10 @@ export class XService {
                                 {
                                     providerId: _user.id,
                                     oauthProvider: OauthProviderName.X,
-                                    username: _user.username,
+                                    username: await this.usernameService.sanitizeUsername({ 
+                                        usernameRaw: _user.username,
+                                        network: _user.network
+                                    }),
                                     avatarUrl: _user.picture,
                                     golds,
                                     network: _user.network,
@@ -57,7 +61,6 @@ export class XService {
                 const { accessToken, refreshToken } = await this.setupService.setup({
                     user,
                     session,
-                    connection: this.connection,
                     create
                 })
 

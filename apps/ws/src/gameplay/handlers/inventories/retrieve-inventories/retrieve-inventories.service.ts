@@ -70,7 +70,6 @@ export class RetrieveInventoriesService {
                     )
                     const { inventories, occupiedIndexes } =
                         await this.inventoryService.getAddParams({
-                            connection: this.connection,
                             inventoryType: inventoryType,
                             userId,
                             session,

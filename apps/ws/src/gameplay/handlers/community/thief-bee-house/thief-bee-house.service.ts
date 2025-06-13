@@ -299,7 +299,6 @@ export class ThiefBeeHouseService {
 
                 // Get inventory add parameters
                 const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
-                    connection: this.connection,
                     inventoryType: inventoryTypeProduct,
                     userId,
                     session

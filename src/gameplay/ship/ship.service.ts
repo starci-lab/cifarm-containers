@@ -5,7 +5,7 @@ import {
     InventoryMapData,
     PartitionInventoriesParams,
     PartitionInventoriesResult
-} from "./ship.types"
+} from "./types"
 import { StaticService } from "../static"
 import { InjectMongoose, InventoryKind, InventorySchema, InventoryType } from "@src/databases"
 import { Connection } from "mongoose"

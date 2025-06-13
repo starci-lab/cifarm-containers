@@ -57,7 +57,6 @@ export class FacebookService {
                 const { accessToken, refreshToken } = await this.setupService.setup({
                     user,
                     session,
-                    connection: this.connection,
                     create
                 })
 

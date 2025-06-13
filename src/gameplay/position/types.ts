@@ -1,9 +1,9 @@
 import { PlacedItemSchema, PlacedItemTypeSchema, Position } from "@src/databases"
-import { Connection } from "mongoose"
+import { ClientSession } from "mongoose"
 
 export interface GetOccupiedPositionsParams {
     userId: string
-    connection: Connection,
+    session: ClientSession
     itself?: PlacedItemSchema
 }
 

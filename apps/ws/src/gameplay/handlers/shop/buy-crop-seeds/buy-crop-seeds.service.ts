@@ -108,10 +108,9 @@ export class BuyCropSeedsService {
                  * ADD SEEDS TO INVENTORY
                  ************************************************************/
                 const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
-                    connection: this.connection,
                     inventoryType,
                     userId: user.id,
-                    session
+                    session,
                 })
 
                 const { storageCapacity } = this.staticService.defaultInfo

@@ -116,7 +116,6 @@ export class BuyToolService {
                  * ADD TOOL TO INVENTORY
                  ************************************************************/
                 const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
-                    connection: this.connection,
                     inventoryType,
                     userId: user.id,
                     session

@@ -7,7 +7,6 @@ export interface PartitionInventoriesParams {
     bulkId: string
 }
 
-
 export interface InventoryMapData {
     inventories: Array<InventorySchema>
     totalQuantity: number

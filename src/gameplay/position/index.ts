@@ -1,2 +1,2 @@
 export * from "./position.service"
-export * from "./position.types"
+export * from "./types"

@@ -15,6 +15,7 @@ import { EncryptModule } from "./encrypt"
 import { MongooseModule } from "@src/databases"
 import { GoogleCloudModule } from "@src/google-cloud"
 import { HttpModule } from "@nestjs/axios"
+import { GameplayModule } from "@src/gameplay"
 @Module({
     imports: [
         EnvModule.forRoot(),
@@ -30,6 +31,9 @@ import { HttpModule } from "@nestjs/axios"
             useGlobalImports: true,
         }), 
         GoogleCloudModule.register({
+            isGlobal: true
+        }),
+        GameplayModule.register({
             isGlobal: true
         }),
         ExecModule.register({

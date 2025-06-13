@@ -1,14 +1,14 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
-import { GraphQLTypeTerrainId, DecorationId, DecorationType, GraphQLTypeDecorationType } from "../enums"
+import { DecorationId, DecorationType, GraphQLTypeDecorationType, GraphQLTypeDecorationId } from "../enums"
 
 @ObjectType({
     description: "The terrain schema"
 })
 @Schema({ timestamps: true, collection: "decorations" })
 export class DecorationSchema extends AbstractSchema {
-    @Field(() => GraphQLTypeTerrainId, {
+    @Field(() => GraphQLTypeDecorationId, {
         description: "The display ID of the terrain"
     })
     @Prop({ type: String, enum: DecorationId, required: true, unique: true })

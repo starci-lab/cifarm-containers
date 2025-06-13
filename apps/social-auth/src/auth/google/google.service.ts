@@ -3,7 +3,7 @@ import { UserGoogleLike } from "@src/google-cloud"
 import { UserSchema } from "@src/databases/mongoose/gameplay/schemas/user.schema"
 import { OauthProviderName } from "@src/databases/mongoose/gameplay/enums/types"
 import { Connection } from "mongoose"
-import { EnergyService, StaticService } from "@src/gameplay"
+import { EnergyService, StaticService, UsernameService } from "@src/gameplay"
 import { envConfig } from "@src/env"
 import { InjectMongoose } from "@src/databases"
 import { SetupService } from "../../setup"
@@ -15,6 +15,7 @@ export class GoogleService {
         private readonly setupService: SetupService,
         @InjectMongoose()
         private readonly connection: Connection,
+        private readonly usernameService: UsernameService,
         private readonly energyService: EnergyService,
         private readonly staticService: StaticService
     ) {}
@@ -77,7 +78,10 @@ export class GoogleService {
                                     email: _user.email,
                                     oauthProviderId: _user.id,
                                     oauthProvider: OauthProviderName.Google,
-                                    username: _user.username,
+                                    username: await this.usernameService.sanitizeUsername({ 
+                                        usernameRaw: _user.username,
+                                        network: _user.network
+                                    }),
                                     avatarUrl: _user.picture,
                                     golds,
                                     network: _user.network,
@@ -93,7 +97,6 @@ export class GoogleService {
                 const { accessToken, refreshToken } = await this.setupService.setup({
                     user,
                     session,
-                    connection: this.connection,
                     create
                 })
 

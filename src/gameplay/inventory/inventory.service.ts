@@ -16,12 +16,17 @@ import {
     RemoveSingleResult
 } from "./types"
 import { InventoryCapacityExceededException, InventoryNotStackableException } from "../exceptions"
+import { InjectMongoose } from "@src/databases"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class InventoryService {
     private readonly logger = new Logger(InventoryService.name)
 
-    constructor() {}
+    constructor(
+        @InjectMongoose()
+        private readonly connection: Connection,
+    ) {}
 
     public add({
         inventories,
@@ -111,13 +116,12 @@ export class InventoryService {
     }
 
     public async getAddParams({
-        connection,
         inventoryType,
         userId,
         session,
         kind = InventoryKind.Storage
     }: GetAddParamsParams): Promise<GetAddParamsResult> {
-        const inventories = await connection
+        const inventories = await this.connection
             .model<InventorySchema>(InventorySchema.name)
             .find({
                 user: userId,
@@ -126,7 +130,7 @@ export class InventoryService {
             })
             .session(session)
 
-        const occupiedIndexes = await connection
+        const occupiedIndexes = await this.connection
             .model<InventorySchema>(InventorySchema.name)
             .distinct("index", {
                 user: userId,
@@ -138,13 +142,12 @@ export class InventoryService {
     }
 
     public async getUnoccupiedIndexes({
-        connection,
         userId,
         session,
         kind = InventoryKind.Storage,
         storageCapacity
     }: GetUnoccupiedIndexesParams): Promise<Array<number>> {
-        const indexes = await connection
+        const indexes = await this.connection
             .model<InventorySchema>(InventorySchema.name)
             .distinct("index", {
                 user: userId,

@@ -123,6 +123,7 @@ export class UpgradeBuildingService {
 
                 // we thus emit the new synced placed item action
                 syncedPlacedItemAction = {
+                    //id: placedItemBuilding.id,
                     x: placedItemBuilding.x,
                     y: placedItemBuilding.y,
                     buildingInfo: {

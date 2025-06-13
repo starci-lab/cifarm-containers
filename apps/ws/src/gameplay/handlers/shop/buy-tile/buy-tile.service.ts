@@ -119,7 +119,7 @@ export class BuyTileService {
                     throw new WsException("Placed item type not found")
                 }
                 const occupiedPositions = await this.positionService.getOccupiedPositions({
-                    connection: this.connection,
+                    session,
                     userId
                 })
                 this.positionService.checkPositionAvailable({

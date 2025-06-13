@@ -1,27 +1,32 @@
 import { Injectable } from "@nestjs/common"
-import { CheckPositionAvailableParams, GetAdjacentPositionsParams, GetOccupiedPositionsParams } from "./position.types"
+import { CheckPositionAvailableParams, GetAdjacentPositionsParams, GetOccupiedPositionsParams } from "./types"
 import { PlacedItemSchema } from "@src/databases"
 import { Position } from "@src/databases"
 import _ from "lodash"
 import { PositionNotAvailableException } from "../exceptions"
+import { Connection } from "mongoose"
+import { InjectMongoose } from "@src/databases"
 //service for computing the position of placed items
 @Injectable()
 export class PositionService {
-    constructor() {}
+    constructor(
+        @InjectMongoose()
+        private readonly connection: Connection,
+    ) {}
 
     public async getOccupiedPositions({
-        connection,
+        session,
         userId,
         itself
     }: GetOccupiedPositionsParams): Promise<Array<Position>> {
-        let placedItems = await connection
+        let placedItems = await this.connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .find({ user: userId })
             .select({
                 x: 1,
                 y: 1,
                 _id: 0  // Exclude the _id field
-            }).lean().exec()
+            }).session(session).lean().exec()
         if (itself) {
             placedItems = placedItems.filter(placedItem => (placedItem.x !== itself.x && placedItem.y !== itself.y))
         }

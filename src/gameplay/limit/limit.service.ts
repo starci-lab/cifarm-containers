@@ -290,9 +290,9 @@ export class LimitService {
         decoration, 
         //user, session
     }: GetDecorationLimitParams): Promise<LimitResult> {
-        if (decoration.limited) {
+        if (!decoration.limited) {
             return {
-                selectedPlacedItemCountNotExceedLimit: false
+                selectedPlacedItemCountNotExceedLimit: true
             }
         }
         // const placedItemTypeDecorations = this.staticSerivce.placedItemTypes.filter(

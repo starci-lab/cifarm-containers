@@ -43,7 +43,7 @@ export class SellService {
                 }
                 
                 syncedPlacedItemAction = {
-                    id: placedItem.id,
+                    // id: placedItem.id,
                     x: placedItem.x,
                     y: placedItem.y,
                     placedItemType: placedItem.placedItemType

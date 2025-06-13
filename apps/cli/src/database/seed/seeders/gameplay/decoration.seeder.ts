@@ -29,6 +29,7 @@ export class DecorationSeeder implements Seeder {
                 sellable: true,
                 price: 20,
                 sellPrice: 10,
+                limited: false,
                 availableInShop: true,
             },
         ]

@@ -1,6 +1,6 @@
 import { InventoryKind, InventorySchema, InventoryTypeSchema } from "@src/databases"
 import { DeepPartial } from "@src/common"
-import { ClientSession, Connection } from "mongoose"
+import { ClientSession } from "mongoose"
 
 export interface AddParams {
     // inventories with the same type key and same kind
@@ -30,7 +30,6 @@ export interface AddResult {
 
 export interface GetAddParamsParams {
     userId: string
-    connection: Connection,
     session: ClientSession,
     inventoryType: InventoryTypeSchema,
     kind?: InventoryKind
@@ -44,7 +43,6 @@ export interface GetAddParamsResult {
 
 export interface GetUnoccupiedIndexesParams {
     userId: string
-    connection: Connection,
     session: ClientSession,
     inventoryType: InventoryTypeSchema
     kind?: InventoryKind

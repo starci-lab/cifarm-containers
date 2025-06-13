@@ -7,25 +7,29 @@ import {
     InventoryType,
     InventoryTypeSchema,
     SessionSchema,
-    ToolSchema
+    ToolSchema,
+    InjectMongoose
 } from "@src/databases"
 import { StaticService } from "@src/gameplay"
 import { JwtService } from "@src/jwt"
 import { createObjectId, DeepPartial } from "@src/common"
 import { GraphQLError } from "graphql"
 import { SetupParams, SetupResponse } from "./types"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class SetupService {
     constructor(
         private readonly staticService: StaticService,
+        @InjectMongoose()
+        private readonly connection: Connection,
         private readonly jwtService: JwtService
     ) {}
 
-    async setup({ user, session, connection, create }: SetupParams): Promise<SetupResponse> {
+    async setup({ user, session, create }: SetupParams): Promise<SetupResponse> {
         if (create) {
             const { defaultCropId, defaultSeedQuantity, positions } = this.staticService.defaultInfo
-            await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(
+            await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(
                 [
                     {
                         placedItemType: createObjectId(PlacedItemTypeId.Home),
@@ -45,7 +49,7 @@ export class SetupService {
                 ...tile
             }))
 
-            await connection
+            await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
                 .create(tilePartials, { session, ordered: true })
 
@@ -57,12 +61,12 @@ export class SetupService {
                 fruitInfo: {},
                 ...bananaFruit
             }))
-            await connection
+            await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
                 .create(bananaFruitPartials, { session, ordered: true })
 
             // create bee house
-            await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(
+            await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(
                 [
                     {
                         placedItemType: createObjectId(PlacedItemTypeId.BeeHouse).toString(),
@@ -78,7 +82,7 @@ export class SetupService {
             )
 
             // create coop
-            await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(
+            await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(
                 [
                     {
                         placedItemType: createObjectId(PlacedItemTypeId.Coop).toString(),
@@ -102,7 +106,7 @@ export class SetupService {
                     ...chicken
                 })
             )
-            await connection
+            await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
                 .create(chickenPartials, { session, ordered: true })
 
@@ -115,7 +119,7 @@ export class SetupService {
                     ...smallStone
                 })
             )
-            await connection
+            await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
                 .create(smallStonePartials, { session, ordered: true })
 
@@ -127,7 +131,7 @@ export class SetupService {
                 terrainInfo: {},
                 ...smallGrassPatch
             }))
-            await connection
+            await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
                 .create(smallGrassPatchPartials, { session, ordered: true })
 
@@ -140,7 +144,7 @@ export class SetupService {
                     ...oakTree
                 })
             )
-            await connection
+            await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
                 .create(oakTreePartials, { session, ordered: true })
 
@@ -153,7 +157,7 @@ export class SetupService {
                     ...pineTree
                 })
             )
-            await connection
+            await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
                 .create(pineTreePartials, { session, ordered: true })
 
@@ -166,7 +170,7 @@ export class SetupService {
                     ...mapleTree
                 })
             )
-            await connection
+            await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
                 .create(mapleTreePartials, { session, ordered: true })
 
@@ -176,7 +180,7 @@ export class SetupService {
             const toolInventories: Array<DeepPartial<InventorySchema>> = []
             let indexTool = 0
 
-            const tools = await connection
+            const tools = await this.connection
                 .model<ToolSchema>(ToolSchema.name)
                 .find({
                     sort: { $exists: true },
@@ -186,7 +190,7 @@ export class SetupService {
                 .session(session)
 
             for (const tool of tools) {
-                const inventoryType = await connection
+                const inventoryType = await this.connection
                     .model<InventoryTypeSchema>(InventoryTypeSchema.name)
                     .findOne({
                         type: InventoryType.Tool,
@@ -211,7 +215,7 @@ export class SetupService {
             }
 
             if (toolInventories.length > 0) {
-                await connection
+                await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .create(toolInventories, { session, ordered: true })
             }
@@ -219,7 +223,7 @@ export class SetupService {
             /************************************************************
          * CREATE DEFAULT SEEDS
          ************************************************************/
-            const inventoryType = await connection
+            const inventoryType = await this.connection
                 .model<InventoryTypeSchema>(InventoryTypeSchema.name)
                 .findOne({
                     type: InventoryType.Seed,
@@ -235,7 +239,7 @@ export class SetupService {
                 })
             }
 
-            await connection.model<InventorySchema>(InventorySchema.name).create(
+            await this.connection.model<InventorySchema>(InventorySchema.name).create(
                 [
                     {
                         inventoryType: inventoryType.id,
@@ -257,7 +261,7 @@ export class SetupService {
             network: user.network
         })
 
-        await connection.model<SessionSchema>(SessionSchema.name).create(
+        await this.connection.model<SessionSchema>(SessionSchema.name).create(
             [
                 {
                     refreshToken,

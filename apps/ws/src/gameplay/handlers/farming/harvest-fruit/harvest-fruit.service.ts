@@ -209,7 +209,6 @@ export class HarvestFruitService {
 
                 // Get parameters for adding inventory
                 const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
-                    connection: this.connection,
                     inventoryType,
                     userId,
                     session

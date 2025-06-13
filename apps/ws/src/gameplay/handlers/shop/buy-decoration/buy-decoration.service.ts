@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
+    DECORATION_INFO,
     InjectMongoose,
     PlacedItemSchema,
     PlacedItemType,
@@ -88,7 +89,7 @@ export class BuyDecorationService {
                  * CHECK POSITION AVAILABILITY
                  ************************************************************/
                 const occupiedPositions = await this.positionService.getOccupiedPositions({
-                    connection: this.connection,
+                    session,
                     userId
                 })
                 this.positionService.checkPositionAvailable({
@@ -123,20 +124,26 @@ export class BuyDecorationService {
                                 user: userId,
                                 placedItemType: placedItemType.id,
                                 position,
-                                decoration: decoration.id
+                                [DECORATION_INFO]: {},
+                                x: position.x,
+                                y: position.y,
                             }
                         ],
                         { session }
                     )
                 // get synced placed item
+                syncedPlacedItemAction = {
+                    id: placedItemDecorationRaw._id.toString(),
+                    x: placedItemDecorationRaw.x,
+                    y: placedItemDecorationRaw.y,
+                    placedItemType: placedItemDecorationRaw.placedItemType
+                }
+                // get synced placed item
                 const createdSyncedPlacedItems = this.syncService.getCreatedSyncedPlacedItems({
                     placedItems: [placedItemDecorationRaw]
                 })
                 syncedPlacedItems.push(...createdSyncedPlacedItems)
-
-                /************************************************************
-                 * PREPARE ACTION MESSAGE
-                 ************************************************************/
+                console.log("syncedPlacedItems", syncedPlacedItems)
                 // Prepare the action message to emit to Kafka
                 actionPayload = {
                     placedItem: syncedPlacedItemAction,
