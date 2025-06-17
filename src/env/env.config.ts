@@ -245,6 +245,9 @@ export const envConfig = () => ({
     backup: {
         dir: process.env.BACKUP_DIR,
     },
+    restore: {
+        dir: process.env.RESTORE_DIR,
+    },
     facebook: {
         oauth: {
             clientId: process.env.FACEBOOK_OAUTH_CLIENT_ID,

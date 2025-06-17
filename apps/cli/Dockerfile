@@ -26,12 +26,15 @@ RUN apk add --no-cache \
     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing \
     mongodb-tools \
  && chmod +x /usr/bin/mongo* || true
+# Download 7z
+RUN apk update && apk add --no-cache p7zip
 
 # Set the path to the MongoDB Database Tools
 ENV PATH="/usr/bin:/usr/local/bin:${PATH}"
 
 # Verify installation
 RUN mongodump --version
+RUN 7z
 
 WORKDIR /usr/src/app
 

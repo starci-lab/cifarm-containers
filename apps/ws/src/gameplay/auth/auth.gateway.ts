@@ -90,6 +90,7 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, On
         const roomName = this.getRoomName({ userId, type })
         if (type === RoomType.Player) {
             // if someone is already in the room, disconnect them
+            // get sockets in the room on all nodes
             const sockets = await this.namespace.in(roomName).fetchSockets()
             for (const _socket of sockets) {
                 // emit last message

@@ -68,6 +68,8 @@ export class BackupCommand extends CommandRunner {
             folderName: backupFolderName,
             files: backupFiles,
         })
+        // delete the backup folder
+        await fs.rm(backupFolderPath, { recursive: true })
         this.logger.log("Backup completed")
     }
 }

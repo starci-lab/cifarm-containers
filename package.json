@@ -172,6 +172,7 @@
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
     "telegraf": "^4.16.3",
+    "unzip": "^0.1.11",
     "useragent": "^2.3.0",
     "uuid": "9.0.1",
     "whatwg-mimetype": "3.0.0"
@@ -196,6 +197,7 @@
     "@types/passport-jwt": "^4.0.1",
     "@types/passport-twitter": "^1.0.40",
     "@types/supertest": "^6.0.0",
+    "@types/unzip": "^0.1.4",
     "@types/useragent": "^2.3.4",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",

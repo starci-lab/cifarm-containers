@@ -2,6 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import { envConfig } from "@src/env"
 import { Auth, drive_v3 } from "googleapis"
 import { Readable } from "stream"
+import fs from "fs"
 
 @Injectable()
 export class GoogleDriveService {
@@ -59,6 +60,41 @@ export class GoogleDriveService {
       
             // 3. Return the folder URL
             return `https://drive.google.com/drive/folders/${folderId}`
+        } catch (error) {
+            this.logger.error(error)
+            throw error
+        }
+    }
+
+    public async downloadFile(
+        id: string,
+        outputPath: string
+    ): Promise<void> {
+        try {
+            console.log(id)
+            // get the zipped file  
+            // Get the file content as a stream
+            const response = await this.drive.files.get({
+                fileId: id,
+                alt: "media"
+            }, { responseType: "stream" })
+            // Create a write stream to save the file
+            const dest = fs.createWriteStream(outputPath)
+            // Return a promise that resolves when download completes
+            return new Promise<void>((resolve, reject) => {
+            // Pipe the download stream to the file
+                (response.data as Readable)
+                    .pipe(dest)
+                    .on("finish", () => {
+                        console.log(`Download completed: ${outputPath}`)
+                        resolve()
+                    })
+                    .on("error", (error) => {
+                        console.error("Download error:", error)
+                        fs.unlink(outputPath, () => {}) // Clean up partial download
+                        reject(error)
+                    })
+            })
         } catch (error) {
             this.logger.error(error)
             throw error
