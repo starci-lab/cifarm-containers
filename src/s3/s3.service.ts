@@ -3,6 +3,7 @@ import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3
 import { envConfig } from "@src/env"
 import { MODULE_OPTIONS_TOKEN } from "./s3.module-definition"
 import { S3Options, S3Provider } from "./types"
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 
 @Injectable()
 export class S3Service {
@@ -47,6 +48,23 @@ export class S3Service {
         const response = await this.s3.send(command)
         const data = await response.Body?.transformToString()
         return new S3Json(JSON.parse(data.toString()), key, this)
+    }
+
+    public async getSignedUrl(key: string): Promise<string> {
+        const command = new PutObjectCommand({
+            Bucket: envConfig().s3[this.provider].bucketName,
+            Key: key,
+            ACL: "public-read",
+            ContentType: "image/png" // hoặc để client truyền vào nếu cần
+        })
+    
+        return await getSignedUrl(this.s3, command, {
+            expiresIn: envConfig().s3[this.provider].expiresIn
+        })
+    }
+
+    public getSignedUrlExpiresIn(): number {
+        return envConfig().s3[this.provider].expiresIn
     }
 }
 

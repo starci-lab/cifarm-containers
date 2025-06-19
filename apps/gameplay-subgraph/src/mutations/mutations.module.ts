@@ -5,6 +5,7 @@ import { PlayerModule } from "./player"
 import { CommunityModule } from "./community"
 import { SolanaModule } from "./solana"
 import { SuiModule } from "./sui"
+import { MiscellaneousModule } from "./miscellaneous"
 
 @Module({
     imports: [
@@ -13,7 +14,8 @@ import { SuiModule } from "./sui"
         HoneycombModule,
         CommunityModule,
         SolanaModule,
-        SuiModule
+        SuiModule,
+        MiscellaneousModule
     ]
 })
 export class MutationsModule {}

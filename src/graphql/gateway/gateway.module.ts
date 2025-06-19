@@ -24,6 +24,7 @@ export class GraphQLGatewayModule extends ConfigurableModuleClass {
                         ],
                         context: ({ req, res }) => ({ req, res }),
                         debug: false,
+                        
                         playground: false,
                         path: "/graphql",
                         formatError: (error) => {

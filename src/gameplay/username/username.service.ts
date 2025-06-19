@@ -7,10 +7,14 @@ import { Network } from "@src/env"
 export class UsernameService {
     constructor(
         @InjectMongoose()
-        private readonly connection: Connection,
-    ) { }
+        private readonly connection: Connection
+    ) {}
     // we try to make username with this formular
-    public async sanitizeUsername({ usernameRaw, session, network }: SanitizeUsernameParams): Promise<string> {
+    public async sanitizeUsername({
+        usernameRaw,
+        session,
+        network
+    }: SanitizeUsernameParams): Promise<string> {
         // we try to make name to become familiar & unique, max 20 characters
         // eg. Nguyen Van Tu Cuong => nguyenvantucuong
         // eg. Nhĩ Anh => nhianh
@@ -32,7 +36,7 @@ export class UsernameService {
         const baseUsername = removeDiacritics(usernameRaw)
             .toLowerCase()
             .replace(/[^a-z0-9]/g, "") // ⬅️ keep only a–z and 0–9
-            .replace(/\d+$/, "")       // remove trailing digits
+            .replace(/\d+$/, "") // remove trailing digits
             .slice(0, 20)
 
         const REGEX_USERNAME = `^${baseUsername}(\\d+)?$`
@@ -47,7 +51,7 @@ export class UsernameService {
         }
         // Extract numbers from usernames and find the max
         const maxNumber = users
-            .map(user => {
+            .map((user) => {
                 const match = user.username.match(REGEX_USERNAME)
                 return match && match[1] ? parseInt(match[1], 10) : 0
             })
@@ -57,6 +61,18 @@ export class UsernameService {
         return baseUsername.slice(0, 20 - maxNumberString.length) + maxNumberString
     }
 
+    // check if username is already taken
+    public async isUsernameTaken({
+        username,
+        network,
+        session
+    }: IsUsernameTakenParams): Promise<boolean> {
+        const userExists = await this.connection
+            .model<UserSchema>(UserSchema.name)
+            .exists({ username, network })
+            .session(session)
+        return !!userExists
+    }
     //check if username is sanitized
     public isUsernameSanitized({ username }: IsUsernameSanitizedParams): boolean {
         const SANITIZED_USERNAME_REGEX = /^[a-z0-9]+$/
@@ -72,4 +88,10 @@ export interface SanitizeUsernameParams {
 
 export interface IsUsernameSanitizedParams {
     username: string
+}
+
+export interface IsUsernameTakenParams {
+    username: string
+    network: Network
+    session?: ClientSession
 }

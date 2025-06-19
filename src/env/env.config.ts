@@ -190,6 +190,7 @@ export const envConfig = () => ({
             region: process.env.S3_DIGITALOCEAN1_REGION,
             accessKeyId: process.env.S3_DIGITALOCEAN1_ACCESS_KEY_ID,
             secretAccessKey: process.env.S3_DIGITALOCEAN1_SECRET_ACCESS_KEY,
+            expiresIn: Number.parseInt(process.env.S3_DIGITALOCEAN1_EXPIRES_IN ?? "300")
         }
     },
     crypto: {

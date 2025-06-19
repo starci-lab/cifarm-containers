@@ -20,6 +20,7 @@ export class SubgraphOptionsFactory {
             cache: keyvAdapter,
             plugins: [ApolloServerPluginCacheControl(), responseCachePlugin()],
             playground: false,
+            csrfPrevention: true,
             debug: false,
             buildSchemaOptions: {
                 orphanedTypes: [],
