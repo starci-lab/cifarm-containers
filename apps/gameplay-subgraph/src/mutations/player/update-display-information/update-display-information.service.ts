@@ -41,13 +41,12 @@ export class UpdateDisplayInformationService {
                         }
                     })
                 }
-
                 /************************************************************
                  * CHECK ELIGIBILITY
                  ************************************************************/
                 // Update the token balance for the user
                 // check if username is already taken
-                if (username) {
+                if (username && username !== user.username) {
                     const isUsernameTaken = await this.usernameService.isUsernameTaken({
                         username,
                         network: user.network
@@ -69,7 +68,7 @@ export class UpdateDisplayInformationService {
                     }
                     user.username = username
                 }
-                if (avatarUrl) {
+                if (avatarUrl && avatarUrl !== user.avatarUrl) {
                     user.avatarUrl = avatarUrl
                 }
                 await user.save({ session })

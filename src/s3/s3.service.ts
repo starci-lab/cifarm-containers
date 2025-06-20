@@ -1,9 +1,16 @@
 import { Inject, Injectable } from "@nestjs/common"
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
+import {
+    GetObjectCommand,
+    ObjectCannedACL as S3ObjectCannedACL,
+    PutObjectCommand,
+    S3Client
+} from "@aws-sdk/client-s3"
 import { envConfig } from "@src/env"
 import { MODULE_OPTIONS_TOKEN } from "./s3.module-definition"
 import { S3Options, S3Provider } from "./types"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
+import { createEnumType } from "@src/common"
+import { registerEnumType } from "@nestjs/graphql"
 
 @Injectable()
 export class S3Service {
@@ -50,14 +57,18 @@ export class S3Service {
         return new S3Json(JSON.parse(data.toString()), key, this)
     }
 
-    public async getSignedUrl(key: string): Promise<string> {
+    public async getSignedUrl({
+        key,
+        contentType = "image/png",
+        acl = ObjectCannedACL.PublicRead
+    }: GetSignedUrlParams): Promise<string> {
         const command = new PutObjectCommand({
             Bucket: envConfig().s3[this.provider].bucketName,
             Key: key,
-            ACL: "public-read",
-            ContentType: "image/png" // hoặc để client truyền vào nếu cần
+            ACL: getObjectCannedACL(acl),
+            ContentType: contentType
         })
-    
+
         return await getSignedUrl(this.s3, command, {
             expiresIn: envConfig().s3[this.provider].expiresIn
         })
@@ -77,4 +88,53 @@ export class S3Json<T> {
     public async save(): Promise<void> {
         await this.s3Service.uploadJson(this.key, this.data)
     }
+}
+
+export interface GetSignedUrlParams {
+    key: string
+    contentType?: string
+    acl?: ObjectCannedACL
+}
+
+export enum ObjectCannedACL {
+    PublicRead = "publicRead",
+    Private = "private",
+    PublicReadWrite = "publicReadWrite",
+    AuthenticatedRead = "authenticatedRead",
+    BucketOwnerRead = "bucketOwnerRead"
+}
+
+export const GraphQLTypeObjectCannedACL = createEnumType(ObjectCannedACL)
+
+registerEnumType(GraphQLTypeObjectCannedACL, {
+    name: "ObjectCannedACL",
+    description: "The canned acl of the file",
+    valuesMap: {
+        [ObjectCannedACL.PublicRead]: {
+            description: "The public read acl of the file"
+        },
+        [ObjectCannedACL.Private]: {
+            description: "The private acl of the file"
+        },
+        [ObjectCannedACL.PublicReadWrite]: {
+            description: "The public read write acl of the file"
+        },
+        [ObjectCannedACL.AuthenticatedRead]: {
+            description: "The authenticated read acl of the file"
+        },
+        [ObjectCannedACL.BucketOwnerRead]: {
+            description: "The bucket owner read acl of the file"
+        }
+    }
+})
+
+export const getObjectCannedACL = (acl: ObjectCannedACL): S3ObjectCannedACL => {
+    const map: Record<ObjectCannedACL, S3ObjectCannedACL> = {
+        [ObjectCannedACL.PublicRead]: "public-read",
+        [ObjectCannedACL.Private]: "private",
+        [ObjectCannedACL.PublicReadWrite]: "public-read-write",
+        [ObjectCannedACL.AuthenticatedRead]: "authenticated-read",
+        [ObjectCannedACL.BucketOwnerRead]: "bucket-owner-read"
+    }
+    return map[acl]
 }

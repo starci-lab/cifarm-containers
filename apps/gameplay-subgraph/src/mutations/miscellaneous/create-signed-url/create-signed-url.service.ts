@@ -6,15 +6,19 @@ import { S3Service } from "@src/s3"
 export class CreateSignedUrlService {
     private readonly logger = new Logger(CreateSignedUrlService.name)
 
-    constructor(
-        private readonly s3Service: S3Service,
-    ) {}
+    constructor(private readonly s3Service: S3Service) {}
 
-    async createSignedUrl(
-        { key }: CreateSignedUrlRequest
-    ): Promise<CreateSignedUrlResponse> {
+    async createSignedUrl({
+        key,
+        contentType,
+        acl
+    }: CreateSignedUrlRequest): Promise<CreateSignedUrlResponse> {
         try {
-            const signedUrl = await this.s3Service.getSignedUrl(key)
+            const signedUrl = await this.s3Service.getSignedUrl({
+                key,
+                contentType,
+                acl
+            })
             return {
                 success: true,
                 message: "Create signed URL successfully",
