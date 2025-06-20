@@ -74,7 +74,6 @@ export class HelpUseHerbicideService {
                 if (!placedItemTile) {
                     throw new WsException("Tile not found")
                 }
-
                 // Add to synced placed items for action
                 syncedPlacedItemAction = {
                     id: placedItemTile.id,
