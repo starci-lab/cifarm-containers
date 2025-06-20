@@ -21,7 +21,6 @@ import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
-import { HelpUseBugNetReasonCode } from "./types"
 
 @Injectable()
 export class HelpUseBugNetService {
@@ -101,13 +100,6 @@ export class HelpUseBugNetService {
 
                 // Validate fruit has bugs
                 if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.IsBuggy) {
-                    actionPayload = {
-                        action: ActionName.HelpUseBugNet,
-                        placedItem: syncedPlacedItemAction,
-                        reasonCode: HelpUseBugNetReasonCode.NotNeedBugNet,
-                        success: false,
-                        userId
-                    }
                     throw new WsException("Fruit does not buggy")
                 }
 
@@ -210,14 +202,16 @@ export class HelpUseBugNetService {
             this.logger.error(error)
 
             // Send failure action message if any error occurs
-            if (actionPayload) {
-                return {
-                    action: actionPayload
-                }
+            actionPayload = {
+                placedItem: syncedPlacedItemAction,
+                action: ActionName.HelpUseBugNet,
+                success: false,
+                error: error.message,
+                userId
             }
-
-            // Rethrow error to be handled higher up
-            throw error
+            return {
+                action: actionPayload
+            }
         } finally {
             // End the session after the transaction is complete
             await mongoSession.endSession()

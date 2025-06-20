@@ -16,6 +16,7 @@ import { UserLike } from "@src/jwt"
 import { DeepPartial } from "@src/common"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
+import { ActionName } from "../../../emitter"
 
 @Injectable()
 export class SelectCatService {
@@ -35,7 +36,7 @@ export class SelectCatService {
 
         // synced variables
         let syncedUser: DeepPartial<UserSchema> | undefined
-
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
         try {
             const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
@@ -107,8 +108,16 @@ export class SelectCatService {
         } catch (error) {
             this.logger.error(error)
 
-            // Rethrow error to be handled higher up
-            throw error
+            const actionPayload = {
+                placedItem: syncedPlacedItemAction,
+                action: ActionName.SelectCat,
+                success: false,
+                error: error.message,
+                userId
+            }
+            return {
+                action: actionPayload
+            }
         } finally {
             // End the session after the transaction is complete
             await mongoSession.endSession()

@@ -26,7 +26,7 @@ import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
-import { ThiefAnimalData, ThiefAnimalReasonCode } from "./types"
+import { ThiefAnimalData } from "./types"   
 
 @Injectable()
 export class ThiefAnimalService {
@@ -97,13 +97,6 @@ export class ThiefAnimalService {
                     placedItemAnimal.animalInfo.harvestQuantityRemaining 
                     <= placedItemAnimal.animalInfo.harvestQuantityMin
                 ) {
-                    actionPayload = {
-                        action: ActionName.ThiefAnimal,
-                        placedItem: syncedPlacedItemAction,
-                        success: false,
-                        reasonCode: ThiefAnimalReasonCode.QuantityReactMinimum,
-                        userId
-                    }
                     throw new WsException("Animal is not enough to harvest")
                 }
 
@@ -144,13 +137,6 @@ export class ThiefAnimalService {
 
                 // Validate animal is yielding
                 if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Yield) {
-                    actionPayload = {
-                        action: ActionName.ThiefAnimal,
-                        placedItem: syncedPlacedItemAction,
-                        success: false,
-                        reasonCode: ThiefAnimalReasonCode.NotReadyToHarvest,
-                        userId
-                    }
                     throw new WsException("Animal is not ready to harvest")
                 }
 
@@ -251,7 +237,8 @@ export class ThiefAnimalService {
                         action: ActionName.ThiefAnimal,
                         placedItem: syncedPlacedItemAction,
                         success: false,
-                        reasonCode: ThiefAnimalReasonCode.DogAssisted,
+                        error: "Dog assisted",
+                        dogAssistedSuccess: true,
                         userId
                     }
                     const placedItemAnimalSnapshot = placedItemAnimal.$clone()
@@ -417,14 +404,16 @@ export class ThiefAnimalService {
             this.logger.error(error)
 
             // Send failure action message if any error occurs
-            if (actionPayload) {
-                return {
-                    action: actionPayload
-                }
+            actionPayload = {
+                action: ActionName.ThiefAnimal,
+                placedItem: syncedPlacedItemAction,
+                success: false,
+                error: error.message,
+                userId
+            }   
+            return {
+                action: actionPayload
             }
-
-            // Rethrow error to be handled higher up
-            throw error
         } finally {
             // End the session after the transaction is complete
             await mongoSession.endSession()

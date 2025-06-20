@@ -8,7 +8,7 @@ import {
     InventoryType,
     InventoryTypeId,
     PlacedItemSchema,
-    ProductType,
+    ProductType,    
     UserSchema
 } from "@src/databases"
 import { EnergyService, LevelService, SyncService, ThiefService, AssistanceService } from "@src/gameplay"
@@ -18,13 +18,10 @@ import { Connection, Types } from "mongoose"
 import { ThiefBeeHouseMessage } from "./thief-bee-house.dto"
 import { UserLike } from "@src/jwt"
 import { createObjectId, DeepPartial, WithStatus } from "@src/common"
-import {
-    EmitActionPayload,
-    ActionName,
-} from "../../../emitter"
+import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
-import { ThiefBeeHouseData, ThiefBeeHouseReasonCode } from "./types"
+import { ThiefBeeHouseData } from "./types"
 
 @Injectable()
 export class ThiefBeeHouseService {
@@ -144,13 +141,6 @@ export class ThiefBeeHouseService {
                 }
                 // Check if the bee house is ready to harvest
                 if (placedItemBuilding.beeHouseInfo.currentState !== BeeHouseCurrentState.Yield) {
-                    actionPayload = {
-                        action: ActionName.ThiefBeeHouse,
-                        placedItem: syncedPlacedItemAction,
-                        success: false,
-                        reasonCode: ThiefBeeHouseReasonCode.NotReadyToHarvest,
-                        userId
-                    }
                     throw new WsException("Bee house is not ready to harvest")
                 }
 
@@ -163,13 +153,6 @@ export class ThiefBeeHouseService {
                 if (
                     placedItemBuilding.beeHouseInfo.harvestQuantityRemaining 
                     <= placedItemBuilding.beeHouseInfo.harvestQuantityMin) {
-                    actionPayload = {
-                        action: ActionName.ThiefBeeHouse,
-                        placedItem: syncedPlacedItemAction,
-                        success: false,
-                        reasonCode: ThiefBeeHouseReasonCode.QuantityReactMinimum,
-                        userId
-                    }
                     throw new WsException("Bee house is not enough to harvest")
                 }
 
@@ -204,7 +187,8 @@ export class ThiefBeeHouseService {
                         action: ActionName.ThiefBeeHouse,
                         placedItem: syncedPlacedItemAction,
                         success: false,
-                        reasonCode: ThiefBeeHouseReasonCode.DogAssisted,
+                        dogAssistedSuccess: true,
+                        error: "Dog assisted",
                         userId
                     }
                     const placedItemBuildingSnapshot = placedItemBuilding.$clone()
@@ -382,15 +366,16 @@ export class ThiefBeeHouseService {
             this.logger.error(error)
 
             // Send failure action message if any error occurs
-            if (actionPayload) {
-                actionPayload.success = false
-                return {
-                    action: actionPayload
-                }
+            actionPayload = {
+                action: ActionName.ThiefBeeHouse,
+                placedItem: syncedPlacedItemAction,
+                success: false,
+                error: error.message,
+                userId
             }
-
-            // Rethrow error to be handled higher up
-            throw error
+            return {
+                action: actionPayload
+            }
         } finally {
             // End the session after the transaction is complete
             await mongoSession.endSession()

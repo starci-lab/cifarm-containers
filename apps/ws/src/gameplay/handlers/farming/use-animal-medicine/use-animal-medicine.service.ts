@@ -17,7 +17,6 @@ import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
-import { UseAnimalMedicineReasonCode } from "./types"
 
 @Injectable()
 export class UseAnimalMedicineService {
@@ -28,7 +27,7 @@ export class UseAnimalMedicineService {
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
-        private readonly syncService: SyncService
+        private readonly syncService: SyncService,
     ) {}
 
     async useAnimalMedicine(
@@ -102,13 +101,6 @@ export class UseAnimalMedicineService {
 
                 // Check if the animal is sick
                 if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick) {
-                    actionPayload = {
-                        action: ActionName.UseAnimalMedicine,
-                        placedItem: syncedPlacedItemAction,
-                        reasonCode: UseAnimalMedicineReasonCode.NotNeedAnimalMedicine,
-                        success: false,
-                        userId
-                    }
                     throw new WsException("Animal is not sick")
                 }
 
@@ -192,16 +184,16 @@ export class UseAnimalMedicineService {
             return result
         } catch (error) {
             this.logger.error(error)
-
-            // Send failure action message if any error occurs
-            if (actionPayload) {
-                return {
-                    action: actionPayload
-                }
+            const actionPayload = {
+                placedItem: syncedPlacedItemAction,
+                action: ActionName.UseAnimalMedicine,
+                success: false,
+                error: error.message,
+                userId
             }
-
-            // Rethrow error to be handled higher up
-            throw error
+            return {
+                action: actionPayload
+            }
         } finally {
             // End the session after the transaction is complete
             await mongoSession.endSession()

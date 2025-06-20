@@ -2,11 +2,13 @@ import { Injectable, Logger } from "@nestjs/common"
 import { InjectMongoose, PlacedItemSchema } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
-import { WithStatus } from "@src/common"
+import { DeepPartial, WithStatus } from "@src/common"
 import { PositionService, SyncService, StaticService } from "@src/gameplay"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
 import { MoveMessage } from "./move.dto"
+import { ActionName } from "../../../emitter"
+import { EmitActionPayload } from "../../../emitter"
 
 @Injectable()
 export class MoveService {
@@ -27,7 +29,8 @@ export class MoveService {
         const mongoSession = await this.connection.startSession()
  
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
-    
+        let actionPayload: EmitActionPayload | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
         try {
             const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
@@ -45,7 +48,11 @@ export class MoveService {
                     throw new WsException("You are already at this position")
                 }
                 const placedItemSnapshot = placedItem.$clone()
-
+                syncedPlacedItemAction = {
+                    x: placedItem.x,
+                    y: placedItem.y,
+                    placedItemType: placedItem.placedItemType
+                }
                 const placedItemType = this.staticService.placedItemTypes.find(
                     (placedItemType) => placedItemType.id === placedItem.placedItemType.toString()
                 )
@@ -84,14 +91,22 @@ export class MoveService {
                 syncedPlacedItems.push(updatedSyncedPlacedItem)  
 
                 return {
-                    
                     placedItems: syncedPlacedItems
                 }
             })
             return result
         } catch (error) {
             this.logger.error(error)
-            throw error
+            actionPayload = {
+                placedItem: syncedPlacedItemAction,
+                action: ActionName.Move,
+                success: false,
+                error: error.message,
+                userId
+            }
+            return {
+                action: actionPayload
+            }
         } finally {
             await mongoSession.endSession()  // End the session after the transaction
         }

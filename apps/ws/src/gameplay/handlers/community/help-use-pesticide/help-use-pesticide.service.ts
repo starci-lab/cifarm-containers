@@ -21,7 +21,6 @@ import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
-import { HelpUsePesticideReasonCode } from "./types"
 
 @Injectable()
 export class HelpUsePesticideService {
@@ -101,13 +100,6 @@ export class HelpUsePesticideService {
 
                 // Validate tile needs pesticide
                 if (placedItemTile.plantInfo.currentState !== PlantCurrentState.IsInfested) {
-                    actionPayload = {
-                        action: ActionName.HelpUsePesticide,
-                        placedItem: syncedPlacedItemAction,
-                        reasonCode: HelpUsePesticideReasonCode.NotNeedPesticide,
-                        success: false,
-                        userId
-                    }
                     throw new WsException("Tile does not need pesticide")
                 }
 
@@ -212,14 +204,16 @@ export class HelpUsePesticideService {
             this.logger.error(error)
 
             // Send failure action message if any error occurs
-            if (actionPayload) {
-                return {
-                    action: actionPayload
-                }
+            actionPayload = {
+                placedItem: syncedPlacedItemAction,
+                action: ActionName.HelpUsePesticide,
+                success: false,
+                error: error.message,
+                userId
             }
-
-            // Rethrow error to be handled higher up
-            throw error
+            return {
+                action: actionPayload
+            }
         } finally {
             // End the session after the transaction is complete
             await mongoSession.endSession()

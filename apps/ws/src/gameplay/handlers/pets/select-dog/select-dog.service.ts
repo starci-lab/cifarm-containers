@@ -16,6 +16,7 @@ import { UserLike } from "@src/jwt"
 import { DeepPartial } from "@src/common"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
+import { ActionName } from "../../../emitter"
 
 @Injectable()
 export class SelectDogService {
@@ -35,7 +36,7 @@ export class SelectDogService {
 
         // synced variables
         let syncedUser: DeepPartial<UserSchema> | undefined
-
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
         try {
             const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
@@ -50,7 +51,11 @@ export class SelectDogService {
                 if (!placedItemPet) {
                     throw new WsException("Pet not found")
                 }
-
+                syncedPlacedItemAction = {
+                    x: placedItemPet.x,
+                    y: placedItemPet.y,
+                    placedItemType: placedItemPet.placedItemType
+                }
                 // Validate ownership
                 if (placedItemPet.user.toString() !== userId) {
                     throw new WsException("Cannot select another user's pet")
@@ -93,12 +98,10 @@ export class SelectDogService {
                 // update the user selected dog id
                 user.selectedPlacedItemDogId = new Types.ObjectId(placedItemPetId)
                 await user.save({ session })
-
                 syncedUser = this.syncService.getPartialUpdatedSyncedUser({
                     userSnapshot: userSnapshot,
                     userUpdated: user
                 })
-
                 return {
                     user: syncedUser,
                 }
@@ -106,8 +109,16 @@ export class SelectDogService {
             return result
         } catch (error) {
             this.logger.error(error)
-            // Rethrow error to be handled higher up
-            throw error
+            const actionPayload = {
+                placedItem: syncedPlacedItemAction,
+                action: ActionName.SelectDog,
+                success: false,
+                error: error.message,
+                userId
+            }
+            return {
+                action: actionPayload
+            }
         } finally {
             // End the session after the transaction is complete
             await mongoSession.endSession()

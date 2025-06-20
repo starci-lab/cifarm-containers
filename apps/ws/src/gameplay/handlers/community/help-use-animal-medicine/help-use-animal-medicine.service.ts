@@ -1,27 +1,23 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { 
+import {
     AnimalCurrentState,
-    InjectMongoose, 
-    InventorySchema, 
+    InjectMongoose,
+    InventorySchema,
     InventoryKind,
     InventoryTypeId,
-    PlacedItemSchema, 
+    PlacedItemSchema,
     UserSchema
 } from "@src/databases"
-import { 
-    EnergyService, 
-    LevelService, 
-    SyncService 
-} from "@src/gameplay"
+import { EnergyService, LevelService, SyncService } from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
 import { Connection } from "mongoose"
 import { HelpUseAnimalMedicineMessage } from "./help-use-animal-medicine.dto"
 import { UserLike } from "@src/jwt"
 import { createObjectId, DeepPartial, WithStatus } from "@src/common"
-import { EmitActionPayload, ActionName } from "../../../emitter"
+import { EmitActionPayload } from "../../../emitter"
+import { ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
-import { HelpUseAnimalMedicineReasonCode } from "./types"
 
 @Injectable()
 export class HelpUseAnimalMedicineService {
@@ -110,13 +106,6 @@ export class HelpUseAnimalMedicineService {
 
                 // Validate animal needs medicine
                 if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick) {
-                    actionPayload = {
-                        action: ActionName.HelpUseAnimalMedicine,
-                        placedItem: syncedPlacedItemAction,
-                        reasonCode: HelpUseAnimalMedicineReasonCode.NotNeedAnimalMedicine,
-                        success: false,
-                        userId
-                    }
                     throw new WsException("Animal does not need medicine")
                 }
 
@@ -136,7 +125,7 @@ export class HelpUseAnimalMedicineService {
                 if (!user) {
                     throw new WsException("User not found")
                 }
-                
+
                 if (neighbor.network !== user.network) {
                     throw new WsException("Cannot help neighbor in different network")
                 }
@@ -170,7 +159,7 @@ export class HelpUseAnimalMedicineService {
 
                 // Save user
                 await user.save({ session })
-                
+
                 // Add to synced user
                 syncedUser = this.syncService.getPartialUpdatedSyncedUser({
                     userSnapshot,
@@ -183,10 +172,12 @@ export class HelpUseAnimalMedicineService {
                 await placedItemAnimal.save({ session })
 
                 // Add to synced placed items
-                const updatedSyncedPlacedItems = this.syncService.getPartialUpdatedSyncedPlacedItem({
-                    placedItemSnapshot: placedItemAnimalSnapshot,
-                    placedItemUpdated: placedItemAnimal
-                })
+                const updatedSyncedPlacedItems = this.syncService.getPartialUpdatedSyncedPlacedItem(
+                    {
+                        placedItemSnapshot: placedItemAnimalSnapshot,
+                        placedItemUpdated: placedItemAnimal
+                    }
+                )
                 syncedPlacedItems.push(updatedSyncedPlacedItems)
 
                 /************************************************************
@@ -212,17 +203,19 @@ export class HelpUseAnimalMedicineService {
             this.logger.error(error)
 
             // Send failure action message if any error occurs
-            if (actionPayload) {
-                return {
-                    action: actionPayload
-                }
+            actionPayload = {
+                placedItem: syncedPlacedItemAction,
+                action: ActionName.HelpUseAnimalMedicine,
+                success: false,
+                error: error.message,
+                userId
             }
-
-            // Rethrow error to be handled higher up
-            throw error
+            return {
+                action: actionPayload
+            }
         } finally {
             // End the session after the transaction is complete
             await mongoSession.endSession()
         }
     }
-} 
+}

@@ -17,7 +17,6 @@ import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
-import { UsePesticideReasonCode } from "./types"
 
 @Injectable()
 export class UsePesticideService {
@@ -104,13 +103,6 @@ export class UsePesticideService {
 
                 // Check if the plant has pests
                 if (placedItemTile.plantInfo.currentState !== PlantCurrentState.IsInfested) {
-                    actionPayload = {
-                        action: ActionName.UsePesticide,
-                        placedItem: syncedPlacedItemAction,
-                        reasonCode: UsePesticideReasonCode.NotNeedPesticide,
-                        success: false,
-                        userId
-                    }
                     throw new WsException("Plant does not have pests")
                 }
 
@@ -129,6 +121,7 @@ export class UsePesticideService {
                  ************************************************************/
                 // Check if the user has enough energy
                 const { energyConsume, experiencesGain } = this.staticService.activities.usePesticide
+                
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
@@ -194,17 +187,17 @@ export class UsePesticideService {
             return result
         } catch (error) {
             this.logger.error(error)
-
             // Send failure action message if any error occurs
-            if (actionPayload) {
-                actionPayload.success = false
-                return {
-                    action: actionPayload
-                }
+            const actionPayload = {
+                placedItem: syncedPlacedItemAction,
+                action: ActionName.UsePesticide,
+                success: false,
+                error: error.message,
+                userId
             }
-
-            // Rethrow error to be handled higher up
-            throw error
+            return {
+                action: actionPayload
+            }
         } finally {
             // End the session after the transaction is complete
             await mongoSession.endSession()

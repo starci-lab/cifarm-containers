@@ -4,14 +4,14 @@ import { PlaceNFTMessage } from "./place-nft.dto"
 import { UserLike } from "@src/jwt"
 import { PositionService, StaticService, SyncService } from "@src/gameplay"
 import { Connection } from "mongoose"
-import { WithStatus } from "@src/common"
+import { DeepPartial, WithStatus } from "@src/common"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
 import { PlacedItemType } from "@src/databases"
+import { ActionName, EmitActionPayload } from "../../../emitter"
 @Injectable()
 export class PlaceNFTService {
     private readonly logger = new Logger(PlaceNFTService.name)
-
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
@@ -27,6 +27,8 @@ export class PlaceNFTService {
         // synced variables
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
         const mongoSession = await this.connection.startSession()
+        let actionPayload: EmitActionPayload | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
         try {
             // Using withTransaction to handle the transaction lifecycle
             const result = await mongoSession.withTransaction(async (session) => {
@@ -36,6 +38,11 @@ export class PlaceNFTService {
                     .session(session)
                 if (!placedItem) {
                     throw new WsException("Placed item not found")
+                }
+                syncedPlacedItemAction = {
+                    x: placedItem.x,
+                    y: placedItem.y,
+                    placedItemType: placedItem.placedItemType
                 }
                 if (placedItem.user.toString() !== userId) {
                     throw new WsException("You are not the owner of this placed item")
@@ -124,7 +131,16 @@ export class PlaceNFTService {
             return result
         } catch (error) {
             this.logger.error(error)
-            throw error
+            actionPayload = {
+                placedItem: syncedPlacedItemAction,
+                action: ActionName.PlaceNFT,
+                success: false,
+                error: error.message,
+                userId
+            }
+            return {
+                action: actionPayload
+            }
         } finally {
             await mongoSession.endSession()
         }

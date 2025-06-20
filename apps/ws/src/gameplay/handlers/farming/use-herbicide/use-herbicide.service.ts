@@ -17,8 +17,7 @@ import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
-import { UseHerbicideReasonCode } from "./types"
-
+    
 @Injectable()
 export class UseHerbicideService {
     private readonly logger = new Logger(UseHerbicideService.name)
@@ -28,7 +27,7 @@ export class UseHerbicideService {
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
-        private readonly syncService: SyncService
+        private readonly syncService: SyncService,
     ) {}
 
     async useHerbicide(
@@ -104,13 +103,6 @@ export class UseHerbicideService {
 
                 // Check if the plant has weeds
                 if (placedItemTile.plantInfo.currentState !== PlantCurrentState.IsWeedy) {
-                    actionPayload = {
-                        action: ActionName.UseHerbicide,
-                        placedItem: syncedPlacedItemAction,
-                        reasonCode: UseHerbicideReasonCode.NotNeedHerbicide,
-                        success: false,
-                        userId
-                    }
                     throw new WsException("Plant does not have weeds")
                 }
 
@@ -183,28 +175,26 @@ export class UseHerbicideService {
                     success: true,
                     userId
                 }
-
                 return {
                     user: syncedUser,
                     placedItems: syncedPlacedItems,
                     action: actionPayload
                 }
             })
-
             return result
         } catch (error) {
             this.logger.error(error)
-
             // Send failure action message if any error occurs
-            if (actionPayload) {
-                actionPayload.success = false
-                return {
-                    action: actionPayload
-                }
+            const actionPayload = {
+                placedItem: syncedPlacedItemAction,
+                action: ActionName.UseHerbicide,
+                success: false,
+                error: error.message,
+                userId
             }
-
-            // Rethrow error to be handled higher up
-            throw error
+            return {
+                action: actionPayload,
+            }
         } finally {
             // End the session after the transaction is complete
             await mongoSession.endSession()

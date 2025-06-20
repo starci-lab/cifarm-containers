@@ -37,7 +37,7 @@ export class HarvestBeeHouseService {
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
         private readonly syncService: SyncService,
-        private readonly inventoryService: InventoryService
+        private readonly inventoryService: InventoryService,
     ) {}
 
     async harvestBeeHouse(
@@ -277,17 +277,17 @@ export class HarvestBeeHouseService {
             return result
         } catch (error) {
             this.logger.error(error)
-
             // Send failure action message if any error occurs
-            if (actionPayload) {
-                actionPayload.success = false
-                return {
-                    action: actionPayload
-                }
+            const actionPayload = {
+                placedItem: syncedPlacedItemAction,
+                action: ActionName.HarvestBeeHouse,
+                success: false,
+                error: error.message,
+                userId
             }
-
-            // Rethrow error to be handled higher up
-            throw error
+            return {
+                action: actionPayload
+            }
         } finally {
             // End the session after the transaction is complete
             await mongoSession.endSession()

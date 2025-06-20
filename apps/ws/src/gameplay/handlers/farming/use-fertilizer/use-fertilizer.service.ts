@@ -34,7 +34,7 @@ export class UseFertilizerService {
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
         private readonly syncService: SyncService,
-        private readonly coreService: CoreService
+        private readonly coreService: CoreService,
     ) {}
 
     async useFertilizer(
@@ -67,10 +67,6 @@ export class UseFertilizerService {
 
                 // Save user snapshot for sync later
                 const userSnapshot = user.$clone()
-
-                /************************************************************
-                 * RETRIEVE AND VALIDATE TILE DATA
-                 ************************************************************/
                 // Fetch placed item (tile)
                 const placedItemTile = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -83,12 +79,10 @@ export class UseFertilizerService {
                 if (!placedItemTile) {
                     throw new WsException("Tile not found")
                 }
-
                 // Check if the tile has a plant
                 if (!placedItemTile.plantInfo) {
                     throw new WsException("No plant found on this tile")
                 }
-
                 // Check if the plant is already fertilized
                 if (placedItemTile.plantInfo.isFertilized) {
                     throw new WsException("Plant is already fertilized")
@@ -134,7 +128,6 @@ export class UseFertilizerService {
                 if (supplyFertilizer.type !== SupplyType.Fertilizer) {
                     throw new WsException("Not a fertilizer")
                 }
-
                 /************************************************************
                  * VALIDATE ENERGY
                  ************************************************************/
@@ -145,7 +138,6 @@ export class UseFertilizerService {
                     current: user.energy,
                     required: energyConsume
                 })
-
                 /************************************************************
                  * UPDATE USER ENERGY AND EXPERIENCE
                  ************************************************************/
@@ -154,7 +146,6 @@ export class UseFertilizerService {
                     user,
                     quantity: energyConsume
                 })
-
                 // Add experience
                 this.levelService.addExperiences({
                     user,
@@ -219,7 +210,6 @@ export class UseFertilizerService {
                     }
                 )
                 syncedPlacedItems.push(syncedUpdatedPlacedItems)
-
                 /************************************************************
                  * PREPARE ACTION MESSAGE
                  ************************************************************/
@@ -230,7 +220,6 @@ export class UseFertilizerService {
                     success: true,
                     userId
                 }
-
                 return {
                     user: syncedUser,
                     placedItems: syncedPlacedItems,
@@ -242,16 +231,16 @@ export class UseFertilizerService {
             return result
         } catch (error) {
             this.logger.error(error)
-
-            // Send failure action message if any error occurs
-            if (actionPayload) {
-                return {
-                    action: actionPayload
-                }
+            const actionPayload = {
+                placedItem: syncedPlacedItemAction,
+                action: ActionName.UseFertilizer,
+                success: false,
+                error: error.message,
+                userId
             }
-
-            // Rethrow error to be handled higher up
-            throw error
+            return {
+                action: actionPayload,
+            }
         } finally {
             // End the session after the transaction is complete
             await mongoSession.endSession()

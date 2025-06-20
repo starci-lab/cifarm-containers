@@ -21,7 +21,6 @@ import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
-import { HelpUseHerbicideReasonCode } from "./types"
     
 @Injectable()
 export class HelpUseHerbicideService {
@@ -40,7 +39,6 @@ export class HelpUseHerbicideService {
         { placedItemTileId }: HelpUseHerbicideMessage
     ): Promise<SyncedResponse> {
         const mongoSession = await this.connection.startSession()
-
         // synced variables
         let actionPayload: EmitActionPayload | undefined
         let syncedUser: DeepPartial<UserSchema> | undefined
@@ -107,15 +105,8 @@ export class HelpUseHerbicideService {
                     throw new WsException("Tile is not planted")
                 }
 
-                // Validate tile needs herbicide
+                // Validate tile n  eeds herbicide
                 if (placedItemTile.plantInfo.currentState !== PlantCurrentState.IsWeedy) {
-                    actionPayload = {
-                        action: ActionName.HelpUseHerbicide,
-                        placedItem: syncedPlacedItemAction,
-                        reasonCode: HelpUseHerbicideReasonCode.NotNeedHerbicide,
-                        success: false,
-                        userId
-                    }
                     throw new WsException("Tile does not need herbicide")
                 }
 
@@ -209,14 +200,16 @@ export class HelpUseHerbicideService {
             this.logger.error(error)
 
             // Send failure action message if any error occurs
-            if (actionPayload) {
-                return {
-                    action: actionPayload
-                }
+            actionPayload = {
+                placedItem: syncedPlacedItemAction,
+                action: ActionName.HelpUseHerbicide,
+                success: false,
+                error: error.message,
+                userId
             }
-
-            // Rethrow error to be handled higher up
-            throw error
+            return {
+                action: actionPayload
+            }
         } finally {
             // End the session after the transaction is complete
             await mongoSession.endSession()

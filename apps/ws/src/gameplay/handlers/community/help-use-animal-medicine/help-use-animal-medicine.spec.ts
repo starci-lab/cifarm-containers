@@ -2,20 +2,23 @@
 import { Test } from "@nestjs/testing"
 import { HelpUseAnimalMedicineService } from "./help-use-animal-medicine.service"
 import { UseAnimalMedicineService } from "../../farming/use-animal-medicine/use-animal-medicine.service"
-import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
-import { 
+import {
+    GameplayConnectionService,
+    GameplayMockUserService,
+    TestingInfraModule
+} from "@src/testing"
+import {
     getMongooseToken,
-    InventoryKind, 
+    InventoryKind,
     InventorySchema,
-    InventoryTypeId, 
-    PlacedItemSchema, 
+    InventoryTypeId,
+    PlacedItemSchema,
     PlacedItemTypeId,
-    AnimalCurrentState,
+    AnimalCurrentState
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
 import { EmitActionPayload } from "../../../emitter"
-import { HelpUseAnimalMedicineReasonCode } from "./types"
 
 describe("HelpUseAnimalMedicineService", () => {
     let service: HelpUseAnimalMedicineService
@@ -42,28 +45,32 @@ describe("HelpUseAnimalMedicineService", () => {
     it("should successfully help use animal medicine", async () => {
         const user = await gameplayMockUserService.generate() // Generate a user for testing
         const neighbor = await gameplayMockUserService.generate()
-        const placedItemTile = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
-            user: neighbor.id,
-            tileInfo: {},
-            animalInfo: {
-                currentState: AnimalCurrentState.Sick,
-            },
-            x: 0,
-            y: 0,
-            placedItemType: createObjectId(PlacedItemTypeId.Chicken)
-        })
+        const placedItemTile = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                user: neighbor.id,
+                tileInfo: {},
+                animalInfo: {
+                    currentState: AnimalCurrentState.Sick
+                },
+                x: 0,
+                y: 0,
+                placedItemType: createObjectId(PlacedItemTypeId.Chicken)
+            })
         await connection.model<InventorySchema>(InventorySchema.name).create({
             user: user.id,
             inventoryType: createObjectId(InventoryTypeId.AnimalMedicine),
             kind: InventoryKind.Tool,
-            index: 0,
-        })  
+            index: 0
+        })
         // help use animal medicine
         const { placedItems, action, watcherUserId } = await service.helpUseAnimalMedicine(user, {
             placedItemAnimalId: placedItemTile.id
         })
         // check result
-        const updatedPlacedItem = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).findById(placedItemTile.id)
+        const updatedPlacedItem = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .findById(placedItemTile.id)
         expect(updatedPlacedItem.animalInfo.currentState).toBe(AnimalCurrentState.Normal)
         expect(action.success).toBe(true)
         expect(placedItems.length).toBe(1)
@@ -73,27 +80,29 @@ describe("HelpUseAnimalMedicineService", () => {
     it("should throw error if user use animal medicine before help", async () => {
         const user = await gameplayMockUserService.generate()
         const neighbor = await gameplayMockUserService.generate()
-        const placedItemTile = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
-            user: neighbor.id,
-            tileInfo: {},
-            animalInfo: {
-                currentState: AnimalCurrentState.Sick,
-            },
-            x: 0,
-            y: 0,
-            placedItemType: createObjectId(PlacedItemTypeId.Chicken)
-        })
+        const placedItemTile = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                user: neighbor.id,
+                tileInfo: {},
+                animalInfo: {
+                    currentState: AnimalCurrentState.Sick
+                },
+                x: 0,
+                y: 0,
+                placedItemType: createObjectId(PlacedItemTypeId.Chicken)
+            })
         await connection.model<InventorySchema>(InventorySchema.name).create({
             user: user.id,
             inventoryType: createObjectId(InventoryTypeId.AnimalMedicine),
             kind: InventoryKind.Tool,
-            index: 0,
+            index: 0
         })
         await connection.model<InventorySchema>(InventorySchema.name).create({
             user: neighbor.id,
             inventoryType: createObjectId(InventoryTypeId.AnimalMedicine),
             kind: InventoryKind.Tool,
-            index: 1,
+            index: 1
         })
         let action: EmitActionPayload
         await Promise.all([
@@ -101,13 +110,9 @@ describe("HelpUseAnimalMedicineService", () => {
                 placedItemAnimalId: placedItemTile.id
             }),
             (async () => {
-                // wait 10ms
-                // await new Promise(resolve => setTimeout(resolve, 10))
                 // help use animal medicine
                 try {
-                    const { 
-                        action: helpAction, 
-                    } = await service.helpUseAnimalMedicine(user, {
+                    const { action: helpAction } = await service.helpUseAnimalMedicine(user, {
                         placedItemAnimalId: placedItemTile.id
                     })
                     action = helpAction
@@ -119,9 +124,7 @@ describe("HelpUseAnimalMedicineService", () => {
         ])
         // check result
         expect(action.success).toBe(false)
-        expect(action.reasonCode).toBe(HelpUseAnimalMedicineReasonCode.NotNeedAnimalMedicine)
-        //expect(placedItems.length).toBe(1)
-        //expect(watcherUserId).toBe(neighbor.id.toString())
+        expect(action.error).toBe("Animal is not sick")
     })
 
     afterAll(async () => {

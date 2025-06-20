@@ -8,8 +8,8 @@ import { SyncService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { RemovePlantMessage } from "./remove-plant.dto"
 import { UserLike } from "@src/jwt"
-import { WithStatus } from "@src/common"
-import { EmitActionPayload } from "../../../emitter"
+import { DeepPartial, WithStatus } from "@src/common"
+import { ActionName, EmitActionPayload } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
 
@@ -31,7 +31,7 @@ export class RemovePlantService {
         // synced variables
         let actionPayload: EmitActionPayload | undefined
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
-
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined   
         try {
             const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
@@ -42,11 +42,9 @@ export class RemovePlantService {
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
-
                 if (!user) {
                     throw new WsException("User not found")
                 }
-
                 /************************************************************
                  * RETRIEVE AND VALIDATE TILE DATA
                  ************************************************************/
@@ -63,6 +61,13 @@ export class RemovePlantService {
                     throw new WsException("Tile not found")
                 }
                 const placedItemTileSnapshot = placedItemTile.$clone()
+                
+                syncedPlacedItemAction = {
+                    id: placedItemTile.id,
+                    x: placedItemTile.x,
+                    y: placedItemTile.y,
+                    placedItemType: placedItemTile.placedItemType,
+                }
 
                 // Check if the tile already has a plant
                 if (placedItemTile.plantInfo) {
@@ -94,14 +99,16 @@ export class RemovePlantService {
             this.logger.error(error)
 
             // Send failure action message if any error occurs
-            if (actionPayload) {
-                return {
-                    action: actionPayload
-                }
+            const actionPayload = {
+                placedItem: syncedPlacedItemAction,
+                action: ActionName.HarvestPlant,
+                success: false,
+                error: error.message,
+                userId
             }
-
-            // Rethrow error to be handled higher up
-            throw error
+            return {
+                action: actionPayload
+            }
         } finally {
             // End the session after the transaction is complete
             await mongoSession.endSession()

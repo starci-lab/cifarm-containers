@@ -7,7 +7,8 @@ export interface EmitActionPayload<TData = undefined> {
     action?: ActionName
     success?: boolean
     data?: TData
-    reasonCode?: string
+    error?: string
+    dogAssistedSuccess?: boolean
 }
 
 export interface ThiefPlantData {
@@ -124,6 +125,10 @@ export enum ActionName {
     HarvestBeeHouse = "harvest_bee_house",
     ThiefBeeHouse = "thief_bee_house",
     BuyPet = "buy_pet",
-    BuyDecoration = "buy_decoration"
+    BuyDecoration = "buy_decoration",
+    RemovePlant = "remove_plant",
+    SelectDog = "select_dog",
+    SelectCat = "select_cat",
+    PlaceNFT = "place_nft"
 }
 

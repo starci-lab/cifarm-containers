@@ -1,19 +1,14 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { 
+import {
     FruitCurrentState,
-    InjectMongoose, 
-    InventorySchema, 
-    InventoryType, 
-    InventoryTypeId, 
-    PlacedItemSchema, 
-    UserSchema 
+    InjectMongoose,
+    InventorySchema,
+    InventoryType,
+    InventoryTypeId,
+    PlacedItemSchema,
+    UserSchema
 } from "@src/databases"
-import { 
-    EnergyService, 
-    InventoryService, 
-    LevelService, 
-    SyncService 
-} from "@src/gameplay"
+import { EnergyService, InventoryService, LevelService, SyncService } from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
 import { Connection } from "mongoose"
 import { UseFruitFertilizerMessage } from "./use-fruit-fertilizer.dto"
@@ -33,7 +28,7 @@ export class UseFruitFertilizerService {
         private readonly inventoryService: InventoryService,
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
-        private readonly syncService: SyncService
+        private readonly syncService: SyncService,
     ) {}
 
     async useFruitFertilizer(
@@ -149,7 +144,6 @@ export class UseFruitFertilizerService {
                     current: user.energy,
                     required: energyConsume
                 })
-
                 /************************************************************
                  * DATA MODIFICATION
                  * Update all data after all validations are complete
@@ -168,23 +162,27 @@ export class UseFruitFertilizerService {
 
                 // Save user
                 await user.save({ session })
-                
+
                 // Add to synced user
                 syncedUser = this.syncService.getPartialUpdatedSyncedUser({
                     userSnapshot,
                     userUpdated: user
                 })
-                
+
                 // Get parameters for removing inventory
-                const { removedInventory, updatedInventory, removeInsteadOfUpdate } = this.inventoryService.removeSingle({
-                    inventory: inventorySupply,
-                    quantity: 1
-                })
+                const { removedInventory, updatedInventory, removeInsteadOfUpdate } =
+                    this.inventoryService.removeSingle({
+                        inventory: inventorySupply,
+                        quantity: 1
+                    })
 
                 if (removeInsteadOfUpdate) {
-                    await this.connection.model<InventorySchema>(InventorySchema.name).deleteMany({
-                        _id: { $in: removedInventory._id }
-                    }, { session })
+                    await this.connection.model<InventorySchema>(InventorySchema.name).deleteMany(
+                        {
+                            _id: { $in: removedInventory._id }
+                        },
+                        { session }
+                    )
                     const deletedSyncedInventories = this.syncService.getDeletedSyncedInventories({
                         inventoryIds: [removedInventory.id]
                     })
@@ -201,14 +199,16 @@ export class UseFruitFertilizerService {
 
                 // Update placed item tile
                 placedItemFruit.fruitInfo.currentState = FruitCurrentState.Normal
-                
+
                 // Save changes
                 await placedItemFruit.save({ session })
-                
-                const updatedSyncedPlacedItems = this.syncService.getPartialUpdatedSyncedPlacedItem({
-                    placedItemSnapshot: placedItemFruitSnapshot,
-                    placedItemUpdated: placedItemFruit
-                })
+
+                const updatedSyncedPlacedItems = this.syncService.getPartialUpdatedSyncedPlacedItem(
+                    {
+                        placedItemSnapshot: placedItemFruitSnapshot,
+                        placedItemUpdated: placedItemFruit
+                    }
+                )
                 syncedPlacedItems.push(updatedSyncedPlacedItems)
 
                 // Prepare action message
@@ -218,7 +218,6 @@ export class UseFruitFertilizerService {
                     success: true,
                     userId
                 }
-
                 return {
                     action: actionPayload,
                     user: syncedUser,
@@ -229,15 +228,21 @@ export class UseFruitFertilizerService {
             return result
         } catch (error) {
             this.logger.error(error)
-            if (actionPayload) {
-                return {
-                    action: actionPayload
-                }
+            const actionPayload = {
+                placedItem: syncedPlacedItemAction,
+                action: ActionName.UseFruitFertilizer,
+                success: false,
+                error: error.message,
+                userId
             }
-            throw new WsException("Error using fruit fertilizer")
+            return {
+                action: actionPayload,
+                user: syncedUser,
+                placedItems: syncedPlacedItems,
+                inventories: syncedInventories
+            }
         } finally {
             await mongoSession.endSession()
         }
     }
 }
-    

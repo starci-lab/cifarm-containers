@@ -149,7 +149,16 @@ export class UpgradeBuildingService {
             return result
         } catch (error) {
             this.logger.error(error)
-            throw error
+            const actionPayload = {
+                placedItem: syncedPlacedItemAction,
+                action: ActionName.UpgradeBuilding,
+                success: false,
+                error: error.message,
+                userId
+            }
+            return {
+                action: actionPayload
+            }
         } finally {
             await mongoSession.endSession()
         }

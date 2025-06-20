@@ -18,7 +18,7 @@ import { Connection } from "mongoose"
 import { HelpUseWateringCanMessage } from "./help-use-watering-can.dto"
 import { UserLike } from "@src/jwt"
 import { createObjectId, DeepPartial, WithStatus } from "@src/common"
-import { EmitActionPayload, ActionName, HelpUseWateringCanReasonCode } from "../../../emitter"
+import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
 
@@ -100,13 +100,6 @@ export class HelpUseWateringCanService {
 
                 // Validate tile needs watering
                 if (placedItemTile.plantInfo.currentState !== PlantCurrentState.NeedWater) {
-                    actionPayload = {
-                        action: ActionName.HelpUseWateringCan,
-                        placedItem: syncedPlacedItemAction,
-                        reasonCode: HelpUseWateringCanReasonCode.NotNeedWater,
-                        success: false,
-                        userId
-                    }
                     throw new WsException("Tile does not need watering")
                 }
 
@@ -210,13 +203,16 @@ export class HelpUseWateringCanService {
         } catch (error) {
             this.logger.error(error)
             // Send failure action message if any error occurs
-            if (actionPayload) {
-                return {
-                    action: actionPayload
-                }
+            actionPayload = {
+                placedItem: syncedPlacedItemAction,
+                action: ActionName.HelpUseWateringCan,
+                success: false,
+                error: error.message,
+                userId
             }
-            // Rethrow error to be handled higher up
-            throw error
+            return {
+                action: actionPayload
+            }
         } finally {
             // End the session after the transaction is complete
             await mongoSession.endSession()

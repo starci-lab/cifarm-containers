@@ -17,7 +17,6 @@ import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
-import { UseWateringCanReasonCode } from "./types"
 
 @Injectable()
 export class UseWateringCanService {
@@ -51,7 +50,6 @@ export class UseWateringCanService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE WATERING CAN TOOL
                  ************************************************************/
-
                 // Check if user has watering can
                 const inventoryWateringCanExisted = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
@@ -61,7 +59,6 @@ export class UseWateringCanService {
                         kind: InventoryKind.Tool
                     })
                     .session(session)
-
                 // Validate watering can exists in inventory
                 if (!inventoryWateringCanExisted) {
                     throw new WsException("Watering can not found in toolbar")
@@ -105,13 +102,6 @@ export class UseWateringCanService {
 
                 // Check if the plant needs water
                 if (placedItemTile.plantInfo.currentState !== PlantCurrentState.NeedWater) {
-                    actionPayload = {
-                        action: ActionName.UseWateringCan,
-                        placedItem: syncedPlacedItemAction,
-                        reasonCode: UseWateringCanReasonCode.NotNeedWateringCan,
-                        success: false,
-                        userId
-                    }
                     throw new WsException("Plant does not need water")
                 }
                 // Add to synced placed items
@@ -129,7 +119,7 @@ export class UseWateringCanService {
                  ************************************************************/
                 // Check if the user has enough energy
                 const { energyConsume, experiencesGain } = this.staticService.activities.useWateringCan
-                this.energyService.checkSufficient({
+                this.energyService.checkSufficient( {
                     current: user.energy,
                     required: energyConsume
                 })
@@ -194,17 +184,17 @@ export class UseWateringCanService {
             return result
         } catch (error) {
             this.logger.error(error)
-
-            // Send failure action message if any error occurs
-            if (actionPayload) {
-                actionPayload.success = false
-                return {
-                    action: actionPayload
-                }
+            const actionPayload = {
+                placedItem: syncedPlacedItemAction,
+                action: ActionName.UseWateringCan,
+                success: false,
+                error: error.message,
+                userId
             }
-
-            // Rethrow error to be handled higher up
-            throw error
+            // Send failure action message if any error occurs
+            return {
+                action: actionPayload
+            }
         } finally {
             // End the session after the transaction is complete
             await mongoSession.endSession()

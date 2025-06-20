@@ -28,7 +28,7 @@ import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
-import { ThiefPlantData, ThiefPlantReasonCode } from "./types"
+import { ThiefPlantData } from "./types"
 
 @Injectable()
 export class ThiefPlantService {
@@ -100,7 +100,7 @@ export class ThiefPlantService {
                     actionPayload = {
                         action: ActionName.ThiefPlant,
                         placedItem: syncedPlacedItemAction,
-                        reasonCode: ThiefPlantReasonCode.NotPlanted,
+                        error: "Tile is not planted",
                         success: false,
                         userId
                     }
@@ -111,7 +111,7 @@ export class ThiefPlantService {
                     actionPayload = {
                         action: ActionName.ThiefPlant,
                         placedItem: syncedPlacedItemAction,
-                        reasonCode: ThiefPlantReasonCode.NotFullyMatured,
+                        error: "Plant is not fully mature",
                         success: false,
                         userId
                     }
@@ -132,7 +132,7 @@ export class ThiefPlantService {
                     actionPayload = {
                         action: ActionName.ThiefPlant,
                         placedItem: syncedPlacedItemAction,
-                        reasonCode: ThiefPlantReasonCode.QuantityReactMinimum,
+                        error: "Plant has not enough quantity to steal",
                         success: false,
                         userId
                     }
@@ -267,7 +267,8 @@ export class ThiefPlantService {
                         action: ActionName.ThiefPlant,
                         placedItem: syncedPlacedItemAction,
                         success: false,
-                        reasonCode: ThiefPlantReasonCode.DogAssisted,
+                        error: "Dog assisted",
+                        dogAssistedSuccess: true,
                         userId
                     }
                     const placedItemTileSnapshot = placedItemTile.$clone()
@@ -429,14 +430,16 @@ export class ThiefPlantService {
             this.logger.error(error)
 
             // Send failure action message if any error occurs
-            if (actionPayload) {
-                return {
-                    action: actionPayload
-                }
+            actionPayload = {
+                action: ActionName.ThiefPlant,
+                placedItem: syncedPlacedItemAction,
+                success: false,
+                error: error.message,
+                userId
             }
-
-            // Rethrow error to be handled higher up
-            throw error
+            return {
+                action: actionPayload
+            }
         } finally {
             // End the session after the transaction is complete
             await mongoSession.endSession()

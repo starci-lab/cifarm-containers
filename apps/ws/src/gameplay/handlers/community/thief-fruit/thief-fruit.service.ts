@@ -26,7 +26,7 @@ import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
-import { ThiefFruitData, ThiefFruitReasonCode } from "./types"
+import { ThiefFruitData } from "./types"
 
 @Injectable()
 export class ThiefFruitService {
@@ -128,7 +128,7 @@ export class ThiefFruitService {
                         action: ActionName.ThiefFruit,
                         placedItem: syncedPlacedItemAction,
                         success: false,
-                        reasonCode: ThiefFruitReasonCode.NotFullyMatured,
+                        error: "Fruit is not ready to thief",
                         userId
                     }
                     throw new WsException("Fruit is not ready to thief")
@@ -147,7 +147,7 @@ export class ThiefFruitService {
                         action: ActionName.ThiefFruit,
                         placedItem: syncedPlacedItemAction,
                         success: false,
-                        reasonCode: ThiefFruitReasonCode.QuantityReactMinimum,
+                        error: "Fruit is not enough to thief",
                         userId
                     }
                     throw new WsException("Fruit is not enough to thief")
@@ -250,7 +250,8 @@ export class ThiefFruitService {
                         action: ActionName.ThiefFruit,
                         placedItem: syncedPlacedItemAction,
                         success: false,
-                        reasonCode: ThiefFruitReasonCode.DogAssisted,
+                        error: "Dog assisted",
+                        dogAssistedSuccess: true,
                         userId
                     }
                     const placedItemFruitSnapshot = placedItemFruit.$clone()
@@ -418,14 +419,16 @@ export class ThiefFruitService {
             this.logger.error(error)
 
             // Send failure action message if any error occurs
-            if (actionPayload) {
-                return {
-                    action: actionPayload
-                }
+            actionPayload = {
+                action: ActionName.ThiefFruit,
+                placedItem: syncedPlacedItemAction,
+                success: false,
+                error: error.message,
+                userId
             }
-
-            // Rethrow error to be handled higher up
-            throw error
+            return {
+                action: actionPayload
+            }
         } finally {
             // End the session after the transaction is complete
             await mongoSession.endSession()

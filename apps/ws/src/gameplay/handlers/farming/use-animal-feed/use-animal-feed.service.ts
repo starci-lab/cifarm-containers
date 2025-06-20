@@ -1,11 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { 
+import {
     AnimalCurrentState,
-    InjectMongoose, 
-    InventoryKind, 
-    InventorySchema, 
-    InventoryTypeId, 
-    PlacedItemSchema, 
+    InjectMongoose,
+    InventoryKind,
+    InventorySchema,
+    InventoryTypeId,
+    PlacedItemSchema,
     UserSchema
 } from "@src/databases"
 import { EnergyService, LevelService, SyncService, InventoryService } from "@src/gameplay"
@@ -37,7 +37,7 @@ export class UseAnimalFeedService {
     ): Promise<SyncedResponse> {
         const mongoSession = await this.connection.startSession()
         // synced variables
-        let actionPayload: EmitActionPayload | undefined
+        let actionPayload: EmitActionPayload | undefined    
         let syncedUser: DeepPartial<UserSchema> | undefined
         let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
@@ -47,7 +47,6 @@ export class UseAnimalFeedService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE PLACED ITEM ANIMAL
                  ************************************************************/
-
                 // Get placed item animal
                 const placedItemAnimal = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -58,38 +57,31 @@ export class UseAnimalFeedService {
                 if (!placedItemAnimal) {
                     throw new WsException("Animal not found")
                 }
-
                 // Validate ownership
                 if (placedItemAnimal.user.toString() !== userId) {
-                    throw new WsException("Cannot feed another user's animal")
+                    throw new WsException("Not owner of this animal")
                 }
-
                 // Validate animal is hungry
                 if (placedItemAnimal.animalInfo?.currentState !== AnimalCurrentState.Hungry) {
                     throw new WsException("Animal is not hungry")
                 }
-
                 syncedPlacedItemAction = {
                     id: placedItemAnimalId,
                     placedItemType: placedItemAnimal.placedItemType,
                     x: placedItemAnimal.x,
                     y: placedItemAnimal.y
                 }
-
                 // snapshot placed item animal
                 const placedItemAnimalSnapshot = placedItemAnimal.$clone()
-
-
                 /************************************************************
                  * RETRIEVE AND VALIDATE ACTIVITY DATA
                  ************************************************************/
-
                 // Get activity data
-                const { energyConsume, experiencesGain } = this.staticService.activities.useAnimalFeed
+                const { energyConsume, experiencesGain } =
+                    this.staticService.activities.useAnimalFeed
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-
                 // Get user data
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
@@ -109,11 +101,9 @@ export class UseAnimalFeedService {
                     current: user.energy,
                     required: energyConsume
                 })
-
                 /************************************************************
                  * RETRIEVE AND VALIDATE INVENTORY SUPPLY
-                ************************************************************/
-
+                 ************************************************************/
                 // Get inventory data
                 const inventorySupply = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
@@ -139,7 +129,7 @@ export class UseAnimalFeedService {
 
                 // Validate inventory is animal feed
                 if (inventoryType.displayId !== InventoryTypeId.AnimalFeed) {
-                    throw new WsException("Inventory supply is not animal feed")
+                    throw new WsException("Inventory type not animal feed")
                 }
 
                 /************************************************************
@@ -166,15 +156,19 @@ export class UseAnimalFeedService {
                 })
 
                 // Get parameters for removing inventory
-                const { removedInventory, updatedInventory, removeInsteadOfUpdate } = this.inventoryService.removeSingle({
-                    inventory: inventorySupply,
-                    quantity: 1
-                })
+                const { removedInventory, updatedInventory, removeInsteadOfUpdate } =
+                    this.inventoryService.removeSingle({
+                        inventory: inventorySupply,
+                        quantity: 1
+                    })
 
                 if (removeInsteadOfUpdate) {
-                    await this.connection.model<InventorySchema>(InventorySchema.name).deleteMany({
-                        _id: { $in: removedInventory._id }
-                    }, { session })
+                    await this.connection.model<InventorySchema>(InventorySchema.name).deleteMany(
+                        {
+                            _id: { $in: removedInventory._id }
+                        },
+                        { session }
+                    )
                     const deletedSyncedInventories = this.syncService.getDeletedSyncedInventories({
                         inventoryIds: [removedInventory.id]
                     })
@@ -205,7 +199,6 @@ export class UseAnimalFeedService {
                     success: true,
                     userId
                 }
-
                 return {
                     user: syncedUser,
                     placedItems: syncedPlacedItems,
@@ -218,14 +211,19 @@ export class UseAnimalFeedService {
         } catch (error) {
             this.logger.error(error)
             // Send failure action message if any error occurs
-            if (actionPayload) {
-                return {
-                    action: actionPayload
-                }
+            actionPayload = {
+                placedItem: syncedPlacedItemAction,
+                action: ActionName.UseAnimalFeed,
+                success: false,
+                userId,
+                error: error.message,
             }
-            throw error
+            // Return synced data
+            return {
+                action: actionPayload
+            }
         } finally {
             await mongoSession.endSession()
         }
     }
-} 
+}

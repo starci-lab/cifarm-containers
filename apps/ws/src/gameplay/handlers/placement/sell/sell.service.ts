@@ -24,7 +24,7 @@ export class SellService {
     async sell({ id: userId }: UserLike, { placedItemId }: SellMessage): Promise<SyncedResponse> {
         const mongoSession = await this.connection.startSession()
 
-        let actionMessage: EmitActionPayload | undefined
+        let actionPayload: EmitActionPayload | undefined
         let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
         let syncedUser: DeepPartial<UserSchema> | undefined
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
@@ -189,7 +189,7 @@ export class SellService {
                 /************************************************************
                  * PREPARE ACTION MESSAGE
                  ************************************************************/
-                actionMessage = {
+                actionPayload = {
                     placedItem: syncedPlacedItemAction,
                     action: ActionName.Sell,
                     success: true,
@@ -198,18 +198,22 @@ export class SellService {
                 return {
                     user: syncedUser,
                     placedItems: syncedPlacedItems,
-                    action: actionMessage
+                    action: actionPayload
                 }
             })
             return result
         } catch (error) {
             this.logger.error(error)
-            if (actionMessage) {
-                return {
-                    action: actionMessage
-                }
+            actionPayload = {
+                placedItem: syncedPlacedItemAction,
+                action: ActionName.Sell,
+                success: false,
+                error: error.message,
+                userId
             }
-            throw error
+            return {
+                action: actionPayload
+            }
         } finally {
             await mongoSession.endSession() // End the session after the transaction
         }
